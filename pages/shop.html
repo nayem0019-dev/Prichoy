@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Shop — Prichoy Clothing</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ── Transparent / glass UI overrides for shop page ── */
+    body { background: linear-gradient(135deg,#f0f4f0 0%,#e8f0e8 40%,#f4f0ec 100%); background-attachment: fixed; }
+
+    .page-banner {
+      background: rgba(255,255,255,.45);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,.6);
+    }
+
+    .shop-wrap { padding-top: 20px }
+
+    /* Glass sidebar cards */
+    .sidebar-card {
+      background: rgba(255,255,255,.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(255,255,255,.7);
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
+    }
+
+    /* Gender buttons */
+    .g-filter-row { display: flex; flex-direction: column; gap: 7px }
+    .g-btn {
+      width: 100%; padding: 9px 14px;
+      border: 1.5px solid rgba(0,0,0,.1);
+      border-radius: var(--r-full);
+      font-size: .65rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--ink-soft);
+      background: rgba(255,255,255,.4);
+      transition: all var(--t); text-align: center; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .g-btn:hover { background: rgba(255,255,255,.7); color: var(--ink); border-color: rgba(0,0,0,.2) }
+    .g-btn.on-all    { background: var(--ink);   color: #fff; border-color: var(--ink)   }
+    .g-btn.on-women  { background: var(--women); color: #fff; border-color: var(--women) }
+    .g-btn.on-men    { background: var(--men);   color: #fff; border-color: var(--men)   }
+
+    /* Dynamic category list */
+    .s-cat-btn {
+      background: transparent;
+      border-radius: var(--r-full);
+      border: 1.5px solid transparent;
+    }
+    .s-cat-btn:hover { background: rgba(255,255,255,.6); border-color: rgba(0,0,0,.08) }
+    .s-cat-btn.active { background: var(--ink); color: #fff; border-color: var(--ink) }
+
+    /* Category transition */
+    .s-cat-list { transition: all .3s ease; min-height: 40px }
+    .cat-fade { animation: catFadeIn .25s ease both }
+    @keyframes catFadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Price inputs */
+    .price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px }
+    .p-inp {
+      width: 100%; padding: 9px 12px;
+      border: 1.5px solid rgba(0,0,0,.1);
+      border-radius: var(--r-full);
+      font-size: .78rem;
+      background: rgba(255,255,255,.5);
+      color: var(--ink);
+      transition: border-color var(--t), background var(--t);
+    }
+    .p-inp:focus { border-color: var(--ink); background: rgba(255,255,255,.85) }
+    .apply-btn {
+      width: 100%; padding: 9px;
+      background: var(--ink); color: #fff;
+      border-radius: var(--r-full);
+      font-size: .62rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      transition: background var(--t);
+    }
+    .apply-btn:hover { background: var(--green) }
+    .clear-btn { width:100%; padding:7px; font-size:.65rem; color:var(--ink-muted); background:none; margin-top:5px }
+    .clear-btn:hover { color: var(--ink) }
+
+    /* Glass product cards */
+    .p-card {
+      background: rgba(255,255,255,.65);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(255,255,255,.8);
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    }
+    .p-card:hover {
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 10px 40px rgba(0,0,0,.12);
+    }
+    .p-card.women-card:hover { border-color: rgba(196,122,90,.4) }
+    .p-card.men-card:hover   { border-color: rgba(45,74,106,.35) }
+
+    /* Glass toolbar */
+    .shop-toolbar {
+      background: rgba(255,255,255,.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(255,255,255,.7);
+      border-radius: var(--r-xl);
+      padding: 12px 18px;
+      margin-bottom: 20px;
+    }
+    .sort-sel {
+      background: rgba(255,255,255,.6);
+      border-color: rgba(0,0,0,.1);
+    }
+
+    /* Section tabs glass */
+    .section-tabs {
+      background: rgba(255,255,255,.5);
+      border: 1.5px solid rgba(255,255,255,.7);
+      backdrop-filter: blur(10px);
+    }
+    .s-tab:not(.on-all):not(.on-women):not(.on-men) {
+      background: transparent;
+    }
+
+    /* Mobile filter bar glass */
+    .mob-filter-bar { padding: 0 16px 12px }
+    .mob-cat-btn {
+      background: rgba(255,255,255,.55);
+      border-color: rgba(255,255,255,.7);
+      backdrop-filter: blur(8px);
+    }
+    .mob-cat-btn.active { background: var(--ink); color: #fff }
+  </style>
+</head>
+<body>
+<div id="navMount"></div><div id="cartMount"></div><div id="authMount"></div>
+<main>
+  <div class="page-banner">
+    <h1>Shop All Collections</h1>
+    <p>Men's &amp; Women's fashion — discover your style</p>
+  </div>
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Shop</span></div>
+
+  <!-- Mobile filter chips -->
+  <div class="mob-filter-bar" id="mobFilterBar"></div>
+
+  <div class="shop-wrap">
+    <!-- Sidebar -->
+    <aside class="shop-sidebar">
+      <!-- Gender -->
+      <div class="sidebar-card">
+        <div class="s-title">Gender</div>
+        <div class="g-filter-row">
+          <button class="g-btn on-all"   data-gender="all">All</button>
+          <button class="g-btn"          data-gender="women">👗 Women</button>
+          <button class="g-btn"          data-gender="men">👔 Men</button>
+        </div>
+      </div>
+
+      <!-- Dynamic Category -->
+      <div class="sidebar-card">
+        <div class="s-title">Category</div>
+        <div class="s-cat-list" id="sideCats"></div>
+      </div>
+
+      <!-- Price -->
+      <div class="sidebar-card">
+        <div class="s-title">Price Range (৳)</div>
+        <div class="price-row">
+          <input type="number" class="p-inp" id="pMin" placeholder="Min">
+          <input type="number" class="p-inp" id="pMax" placeholder="Max">
+        </div>
+        <button class="apply-btn" id="applyPriceBtn">Apply Filter</button>
+        <button class="clear-btn" id="clearPriceBtn">Clear</button>
+      </div>
+
+      <!-- Sort -->
+      <div class="sidebar-card">
+        <div class="s-title">Sort By</div>
+        <select class="sort-sel w-full" id="sortSel">
+          <option value="default">Featured</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+          <option value="newest">Newest First</option>
+          <option value="rating">Best Rated</option>
+        </select>
+      </div>
+    </aside>
+
+    <!-- Products area -->
+    <div>
+      <div class="shop-toolbar">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <span class="shop-count" id="shopCount">Loading…</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="section-tabs" style="margin:0">
+              <button class="s-tab on-all"  data-gender="all">All</button>
+              <button class="s-tab"         data-gender="women">👗</button>
+              <button class="s-tab"         data-gender="men">👔</button>
+            </div>
+            <select class="sort-sel" id="sortSelMob">
+              <option value="default">Sort</option>
+              <option value="price-asc">Price ↑</option>
+              <option value="price-desc">Price ↓</option>
+              <option value="newest">New</option>
+              <option value="rating">Top</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="products-grid" id="productsGrid"></div>
+    </div>
+  </div>
+</main>
+<div id="footerMount"></div>
+
+<script src="../js/components.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  document.getElementById("navMount").innerHTML    = renderNav("shop", true);
+  document.getElementById("cartMount").innerHTML   = renderCart();
+  document.getElementById("authMount").innerHTML   = renderAuthModal();
+  document.getElementById("footerMount").innerHTML = renderFooter(true);
+
+  // ── Category definitions per gender ──────────────────
+  var CAT_ALL = [
+    {k:"all",       l:"All Products"},
+    {k:"dresses",   l:"Dresses"},
+    {k:"kurtis",    l:"Kurtis"},
+    {k:"salwar",    l:"Salwar Sets"},
+    {k:"lehenga",   l:"Lehenga"},
+    {k:"gowns",     l:"Gowns"},
+    {k:"sharara",   l:"Sharara"},
+    {k:"palazzo",   l:"Palazzo"},
+    {k:"tops",      l:"Tops"},
+    {k:"shirts",    l:"Shirts"},
+    {k:"bottoms",   l:"Bottoms"},
+    {k:"ethnic",    l:"Ethnic Wear"},
+    {k:"outerwear", l:"Outerwear"},
+    {k:"discount",  l:"🔥 Sale & Discounts"},
+  ];
+  var CAT_WOMEN = [
+    {k:"all",       l:"All Women's"},
+    {k:"dresses",   l:"Dresses"},
+    {k:"kurtis",    l:"Kurtis"},
+    {k:"salwar",    l:"Salwar Sets"},
+    {k:"lehenga",   l:"Lehenga"},
+    {k:"gowns",     l:"Gowns"},
+    {k:"sharara",   l:"Sharara"},
+    {k:"palazzo",   l:"Palazzo"},
+    {k:"tops",      l:"Tops"},
+    {k:"discount",  l:"🔥 Sale & Discounts"},
+  ];
+  var CAT_MEN = [
+    {k:"all",       l:"All Men's"},
+    {k:"shirts",    l:"Shirts"},
+    {k:"bottoms",   l:"Bottoms"},
+    {k:"ethnic",    l:"Ethnic Wear"},
+    {k:"outerwear", l:"Outerwear"},
+    {k:"discount",  l:"🔥 Sale & Discounts"},
+  ];
+
+  function getCatsForGender(gender) {
+    if (gender === "women") return CAT_WOMEN;
+    if (gender === "men")   return CAT_MEN;
+    return CAT_ALL;
+  }
+
+  // ── Build category list in sidebar ────────────────────
+  function buildCatList(gender) {
+    var cats = getCatsForGender(gender);
+    var sideEl = document.getElementById("sideCats");
+    sideEl.innerHTML = "";
+    cats.forEach(function(c, i) {
+      var btn = document.createElement("button");
+      btn.className = "s-cat-btn cat-fade" + (state.filterCat === c.k ? " active" : "");
+      btn.style.transitionDelay = (i * 30) + "ms";
+      btn.dataset.cat = c.k;
+      btn.textContent = c.l;
+      btn.addEventListener("click", function() {
+        state.filterCat = c.k;
+        document.querySelectorAll(".s-cat-btn, .mob-cat-btn").forEach(function(b) {
+          b.classList.toggle("active", b.dataset.cat === c.k);
+        });
+        renderProducts(shopProducts());
+      });
+      sideEl.appendChild(btn);
+    });
+  }
+
+  // ── Build mobile chip bar ─────────────────────────────
+  function buildMobChips(gender) {
+    var cats = getCatsForGender(gender);
+    var bar = document.getElementById("mobFilterBar");
+    bar.innerHTML = "";
+    cats.forEach(function(c) {
+      var btn = document.createElement("button");
+      btn.className = "mob-cat-btn" + (state.filterCat === c.k ? " active" : "");
+      btn.dataset.cat = c.k;
+      btn.textContent = c.l;
+      btn.addEventListener("click", function() {
+        state.filterCat = c.k;
+        document.querySelectorAll(".s-cat-btn, .mob-cat-btn").forEach(function(b) {
+          b.classList.toggle("active", b.dataset.cat === c.k);
+        });
+        renderProducts(shopProducts());
+      });
+      bar.appendChild(btn);
+    });
+  }
+
+  // ── Gender selection ──────────────────────────────────
+  function applyGender(gender) {
+    if (gender !== "men") gender = "men";
+    state.filterGender = gender;
+    // If current filterCat doesn't exist in new gender's cats, reset to "all"
+    var cats = getCatsForGender(gender);
+    var valid = cats.some(function(c) { return c.k === state.filterCat; });
+    if (!valid) state.filterCat = "all";
+
+    // Update gender buttons
+    document.querySelectorAll("[data-gender]").forEach(function(b) {
+      b.classList.remove("on-all","on-women","on-men");
+      if (b.dataset.gender === gender) {
+        if (gender === "women")     b.classList.add("on-women");
+        else if (gender === "men")  b.classList.add("on-men");
+        else                        b.classList.add("on-all");
+      }
+    });
+
+    // Rebuild category lists
+    buildCatList(gender);
+    buildMobChips(gender);
+    renderProducts(shopProducts());
+  }
+
+  document.querySelectorAll("[data-gender]").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      applyGender(btn.dataset.gender);
+    }, true);
+  });
+
+  // ── Price filter ──────────────────────────────────────
+  var priceMin = 0, priceMax = Infinity;
+  function shopProducts() {
+    var list = getFiltered();
+    if (priceMin > 0)        list = list.filter(function(p) { return p.price >= priceMin; });
+    if (priceMax < Infinity) list = list.filter(function(p) { return p.price <= priceMax; });
+    return list;
+  }
+
+  document.getElementById("applyPriceBtn").addEventListener("click", function() {
+    priceMin = parseFloat(document.getElementById("pMin").value) || 0;
+    priceMax = parseFloat(document.getElementById("pMax").value) || Infinity;
+    renderProducts(shopProducts());
+  });
+  document.getElementById("clearPriceBtn").addEventListener("click", function() {
+    priceMin = 0; priceMax = Infinity;
+    document.getElementById("pMin").value = "";
+    document.getElementById("pMax").value = "";
+    renderProducts(shopProducts());
+  });
+
+  // ── Sort ──────────────────────────────────────────────
+  document.getElementById("sortSel").addEventListener("change", function(e) {
+    state.filterSort = e.target.value; renderProducts(shopProducts());
+  });
+  document.getElementById("sortSelMob").addEventListener("change", function(e) {
+    state.filterSort = e.target.value; renderProducts(shopProducts());
+  });
+
+  // ── Init ──────────────────────────────────────────────
+  document.addEventListener("DOMContentLoaded", function() {
+    var params = new URLSearchParams(window.location.search);
+    var catParam = params.get("cat"), genParam = params.get("gender");
+
+    state.filterGender = "men";
+    if (catParam) state.filterCat    = catParam;
+
+    // Build initial categories
+    buildCatList(state.filterGender);
+    buildMobChips(state.filterGender);
+
+    // Apply gender button states
+    document.querySelectorAll("[data-gender]").forEach(function(b) {
+      b.classList.remove("on-all","on-women","on-men");
+      if (b.dataset.gender === state.filterGender) {
+        if (state.filterGender === "women")    b.classList.add("on-women");
+        else if (state.filterGender === "men") b.classList.add("on-men");
+        else                                   b.classList.add("on-all");
+      }
+    });
+
+    renderProducts(shopProducts());
+  });
+</script>
+</body>
+</html>
