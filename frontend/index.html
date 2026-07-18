@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Prichoy Clothing — Men & Women Fashion Bangladesh</title>
+  <meta name="description" content="Prichoy — Bangladesh's premium fashion store for men & women. Dresses, Kurtis, Salwar, Panjabi, Shirts & more.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="navMount"></div><div id="cartMount"></div><div id="authMount"></div>
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <span class="hero-dot hero-dot-1"></span>
+    <span class="hero-dot hero-dot-2"></span>
+    <div class="hero-text">
+      <div class="hero-eyebrow" style="animation:fadeUp .6s .05s both">
+        <span class="hero-eyebrow-line"></span>
+        <span class="label">New Collection · 2026</span>
+      </div>
+      <h1 class="hero-title" style="animation:fadeUp .7s .18s both">
+        Modern style.<br>
+        Made for <span class="green-word">him.</span>
+      </h1>
+      <p class="hero-desc" style="animation:fadeUp .7s .32s both">
+        Elevated essentials and festive statement pieces for the modern Bangladeshi man.
+      </p>
+      <div class="hero-ctas" style="animation:fadeUp .7s .46s both">
+        <a href="pages/shop.html?gender=women" class="btn btn-black btn-lg">👗 Women <span class="arrow">→</span></a>
+        <a href="pages/shop.html?gender=men"   class="btn btn-men btn-lg">👔 Men <span class="arrow">→</span></a>
+        <a href="pages/shop.html?cat=discount" class="btn btn-green-outline btn-lg">Sale 🔥</a>
+      </div>
+      <div class="hero-kpis" style="animation:fadeUp .7s .6s both">
+        <div><div class="kpi-val">2K+</div><div class="kpi-lbl">Happy Customers</div></div>
+        <div><div class="kpi-val">48h</div><div class="kpi-lbl">Dhaka Delivery</div></div>
+        <div><div class="kpi-val">COD</div><div class="kpi-lbl">Cash on Delivery</div></div>
+      </div>
+    </div>
+    <div class="hero-media" style="animation:fadeIn .9s .1s both">
+      <img src="assets/drop-shoulder/panda-purple-front.jpeg" alt="Prichoy drop shoulder collection">
+      <div class="hero-badge">
+        <div class="num">4.9★</div>
+        <div class="txt">Avg Rating</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GENDER SPLIT -->
+  <section class="gender-split">
+    <div class="gender-tile women-tile" onclick="location.href='pages/shop.html?gender=women'">
+      <img src="assets/drop-shoulder/panda-cream-back.jpeg" alt="Drop shoulder collection">
+      <div class="gender-tile-content">
+        <span class="gender-tile-label">Women's</span>
+        <h2 class="gender-tile-title">Dresses. Kurtis.<br>Lehenga & More.</h2>
+        <p class="gender-tile-sub">12+ categories · New arrivals weekly</p>
+        <button class="btn btn-women btn-sm">Shop Women →</button>
+      </div>
+    </div>
+    <div class="gender-divider"></div>
+    <div class="gender-tile men-tile" onclick="location.href='pages/shop.html?gender=men'">
+      <img src="assets/drop-shoulder/atlanta-purple-front.jpeg" alt="Men's drop shoulder collection">
+      <div class="gender-tile-content">
+        <span class="gender-tile-label">Men's</span>
+        <h2 class="gender-tile-title">Shirts. Panjabi.<br>Sherwani & More.</h2>
+        <p class="gender-tile-sub">8+ categories · New arrivals weekly</p>
+        <button class="btn btn-men btn-sm">Shop Men →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SALE SECTION -->
+  <section class="sale-section">
+    <div class="sale-inner">
+      <div class="sale-top">
+        <div>
+          <span class="label" style="color:var(--green-lt)">Auto-Applied Deals</span>
+          <h2 class="sale-title">Sale &amp; <em>Discounts</em></h2>
+          <p class="sale-desc">Items here come with auto-applied coupon codes. Add to cart — discount applies instantly. No codes needed!</p>
+          <div class="sale-badges" style="margin-top:14px">
+            <span class="s-badge s-badge-auto">✅ Auto Coupon</span>
+            <span class="s-badge s-badge-hot">🔥 Up to 30% Off</span>
+            <span class="s-badge s-badge-cod">💵 Cash on Delivery</span>
+          </div>
+        </div>
+        <a href="pages/shop.html?cat=discount" class="btn btn-green btn-lg" style="align-self:flex-start">View All Deals →</a>
+      </div>
+      <div class="products-grid" id="discountGrid"></div>
+    </div>
+  </section>
+
+  <!-- TRENDING -->
+  <section class="products-section">
+    <div class="products-inner">
+      <div class="section-head fade-up">
+        <span class="label">Trending Now</span>
+        <h2 class="display-md">Most Loved Pieces</h2>
+        <p>Customer favourites from our new drop-shoulder collection.</p>
+      </div>
+      <!-- Gender tabs -->
+      <div class="section-tabs">
+        <button class="s-tab on-all" data-gender="all">All</button>
+        <button class="s-tab" data-gender="women">👗 Women</button>
+        <button class="s-tab" data-gender="men">👔 Men</button>
+      </div>
+      <div class="products-grid" id="productsGrid"></div>
+      <div style="text-align:center;margin-top:40px" class="fade-up">
+        <a href="pages/shop.html" class="btn btn-black btn-lg">View All Collections →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- WOMEN EDITORIAL -->
+  <section class="editorial editorial-women">
+    <div class="editorial-media">
+      <img src="assets/drop-shoulder/la-peach-back.jpeg" alt="Drop shoulder collection">
+    </div>
+    <div class="editorial-content">
+      <span class="label label-women">Women's Collection</span>
+      <h2>Dress With<br><em>Grace.</em><br>Feel Extraordinary.</h2>
+      <p>From bridal lehengas to everyday kurtis — discover women's fashion that tells your unique story.</p>
+      <a href="pages/shop.html?gender=women" class="btn btn-women btn-lg">Shop Women →</a>
+    </div>
+  </section>
+
+  <!-- MEN EDITORIAL -->
+  <section class="editorial editorial-men">
+    <div class="editorial-content">
+      <span class="label label-men">Men's Collection</span>
+      <h2>Style With<br><em>Confidence.</em></h2>
+      <p>From festive sherwanis to everyday shirts — premium men's fashion crafted for the modern Bangladeshi man.</p>
+      <a href="pages/shop.html?gender=men" class="btn btn-men btn-lg">Shop Men →</a>
+    </div>
+    <div class="editorial-media">
+      <img src="assets/drop-shoulder/gojo-teal-front.jpeg" alt="Men's drop shoulder collection">
+    </div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section class="cats-section">
+    <div class="cats-inner">
+      <div class="section-head fade-up">
+        <span class="label">Browse</span>
+        <h2 class="display-md">Shop by Category</h2>
+        <p>Shop our graphic drop-shoulder tees in fresh colors and bold prints.</p>
+      </div>
+      <div class="cats-row">
+        <div class="cat-pill fade-up" style="transition-delay:.04s" onclick="location.href='pages/shop.html'"><span class="cat-pill-icon">🛍️</span><span class="cat-pill-name">All</span></div>
+        <div class="cat-pill fade-up" style="transition-delay:.08s" onclick="location.href='pages/shop.html?cat=dresses'"><span class="cat-pill-icon">🌸</span><span class="cat-pill-name">Dresses</span></div>
+        <div class="cat-pill fade-up" style="transition-delay:.12s" onclick="location.href='pages/shop.html?cat=kurtis'"><span class="cat-pill-icon">✨</span><span class="cat-pill-name">Kurtis</span></div>
+        <div class="cat-pill fade-up" style="transition-delay:.16s" onclick="location.href='pages/shop.html?cat=salwar'"><span class="cat-pill-icon">🎀</span><span class="cat-pill-name">Salwar</span></div>
+        <div class="cat-pill fade-up" style="transition-delay:.20s" onclick="location.href='pages/shop.html?cat=lehenga'"><span class="cat-pill-icon">👑</span><span class="cat-pill-name">Lehenga</span></div>
+        <div class="cat-pill fade-up" style="transition-delay:.24s" onclick="location.href='pages/shop.html?cat=gowns'"><span class="cat-pill-icon">💫</span><span class="cat-pill-name">Gowns</span></div>
+        <div class="cat-pill fade-up" style="transition-delay:.28s" onclick="location.href='pages/shop.html?cat=shirts'"><span class="cat-pill-icon">👔</span><span class="cat-pill-name">Shirts</span></div>
+        <div class="cat-pill fade-up" style="transition-delay:.32s" onclick="location.href='pages/shop.html?cat=ethnic'"><span class="cat-pill-icon">🎊</span><span class="cat-pill-name">Ethnic</span></div>
+        <div class="cat-pill fade-up" style="transition-delay:.36s" onclick="location.href='pages/shop.html?cat=outerwear'"><span class="cat-pill-icon">🧥</span><span class="cat-pill-name">Outerwear</span></div>
+        <div class="cat-pill sale-pill-cat fade-up" style="transition-delay:.4s" onclick="location.href='pages/shop.html?cat=discount'"><span class="cat-pill-icon">🏷️</span><span class="cat-pill-name">Sale</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLLECTIONS BENTO -->
+  <section class="collections-wrap">
+    <div class="collections-inner">
+      <div class="section-head fade-up">
+        <span class="label">Collections</span>
+        <h2 class="display-md">Curated For You</h2>
+      </div>
+      <div class="col-bento">
+        <a href="pages/shop.html?gender=men&cat=ethnic" class="col-tile">
+          <img src="assets/drop-shoulder/panda-mint-front.jpeg" alt="Panda drop shoulder tee">
+          <div class="col-tile-over"><span class="col-tag col-tag-men">Men</span><div class="col-tile-name">Ethnic Wear</div><div class="col-tile-sub">Panjabi · Sherwani · Kurta</div><span class="col-tile-link">Shop Now →</span></div>
+        </a>
+        <a href="pages/shop.html?gender=men&cat=shirts" class="col-tile">
+          <img src="assets/drop-shoulder/la-white-front.jpeg" alt="Los Angeles drop shoulder tee">
+          <div class="col-tile-over"><span class="col-tag col-tag-men">Men</span><div class="col-tile-name">Drop Shoulder Tees</div><div class="col-tile-sub">Grand Opening · ৳450 Only</div><span class="col-tile-link">Shop Now →</span></div>
+        </a>
+        <a href="pages/shop.html?cat=discount" class="col-tile">
+          <img src="assets/drop-shoulder/atlanta-purple-back.jpeg" alt="Atlanta drop shoulder tee sale">
+          <div class="col-tile-over" style="background:linear-gradient(to top,rgba(27,67,50,.88) 0%,transparent 55%)"><span class="col-tag col-tag-sale">Men's Collection</span><div class="col-tile-name">Sale &amp; Discounts</div><div class="col-tile-sub">Auto coupons · Up to 30% off</div><span class="col-tile-link">Shop Sale →</span></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY PRICHOY -->
+  <section class="why-section">
+    <div class="why-inner">
+      <div class="section-head fade-up">
+        <span class="label">Why Prichoy</span>
+        <h2 class="display-md">Fashion With Care</h2>
+      </div>
+      <div class="why-grid">
+        <div class="why-card"><span class="why-icon">👗👔</span><div class="why-title">Men & Women</div><p class="why-text">Complete collections for every member of the family. Premium fashion for all genders under one roof.</p></div>
+        <div class="why-card"><span class="why-icon">🚚</span><div class="why-title">Fast Delivery</div><p class="why-text">48 hours inside Dhaka. Up to 72 hours outside Dhaka. Reliable nationwide delivery via trusted couriers.</p></div>
+        <div class="why-card"><span class="why-icon">✅</span><div class="why-title">Easy Returns</div><p class="why-text">Check your product in front of the delivery person. Return on the spot with delivery charge — hassle free.</p></div>
+        <div class="why-card"><span class="why-icon">🏷️</span><div class="why-title">Auto Discounts</div><p class="why-text">Sale items have auto-applied coupons for men &amp; women. Savings are instant — no codes to remember.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTAGRAM -->
+  <section class="insta-section">
+    <div class="insta-inner">
+      <div class="section-head fade-up">
+        <span class="label">@prichoy.info</span>
+        <h2 class="display-md">Style Inspiration</h2>
+        <p>Follow us on <a href="https://www.instagram.com/prichoy.info/" target="_blank" style="color:var(--green);font-weight:600">Instagram</a> for daily fashion drops</p>
+      </div>
+      <div class="insta-grid" id="instaGrid"></div>
+      <div style="margin-top:28px" class="fade-up">
+        <a href="https://www.instagram.com/prichoy.info/" target="_blank" class="btn btn-outline">Follow @prichoy.info</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="newsletter">
+    <h2>Stay in <em>Style</em></h2>
+    <p>Subscribe for exclusive offers, new arrivals &amp; styling tips</p>
+    <form class="nl-form" id="nlForm">
+      <input type="email" class="nl-input" placeholder="Your email address" required>
+      <button type="submit" class="nl-btn">Subscribe</button>
+    </form>
+  </section>
+
+</main>
+<div id="footerMount"></div>
+
+<script src="js/components.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script>
+  document.querySelectorAll('.gender-split, .editorial, a[href*="gender=women"]').forEach(function(el){ el.remove(); });
+  document.getElementById("navMount").innerHTML    = renderNav("home", false);
+  document.getElementById("cartMount").innerHTML   = renderCart();
+  document.getElementById("authMount").innerHTML   = renderAuthModal();
+  document.getElementById("footerMount").innerHTML = renderFooter(false);
+
+  // Build instagram grid with plain JS (no template literal nesting)
+  var instaIds = [
+    "assets/drop-shoulder/atlanta-cream-back.jpeg", "assets/drop-shoulder/la-white-front.jpeg",
+    "assets/drop-shoulder/panda-purple-front.jpeg", "assets/drop-shoulder/gojo-teal-front.jpeg",
+    "assets/drop-shoulder/panda-cream-back.jpeg", "assets/drop-shoulder/atlanta-teal-back.jpeg"
+  ];
+  var ig = document.getElementById("instaGrid");
+  instaIds.forEach(function(id){
+    var tile = document.createElement("div"); tile.className="insta-tile";
+    var img = document.createElement("img"); img.loading="lazy";
+    img.src=id;
+    img.alt="Prichoy Style";
+    var over=document.createElement("div"); over.className="insta-tile-over";
+    over.innerHTML='<span class="insta-icon">📷</span>';
+    tile.appendChild(img); tile.appendChild(over); ig.appendChild(tile);
+  });
+
+  document.addEventListener("DOMContentLoaded", async function(){
+    await loadProductsCache(); loadState(); refreshCartUI(); refreshWishUI(); refreshAuthUI();
+
+    // Trending — newest first (no review/rating system exists in the
+    // backend to sort by "top rated" — see api.js's adaptProduct() note).
+    var trending = PRODUCTS_CACHE.filter(function(p){ return p.category!=="discount"; }).slice(0,8);
+    renderProducts(trending, "productsGrid");
+
+    // Discount items — anything currently marked down (salePrice set) or labeled SALE.
+    var disc = PRODUCTS_CACHE.filter(function(p){ return p.originalPrice || (p.labels||[]).includes("SALE"); });
+    renderProducts(disc, "discountGrid");
+  });
+</script>
+</body>
+</html>

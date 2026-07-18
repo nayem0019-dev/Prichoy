@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>About Us — Prichoy Clothing</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div id="navMount"></div><div id="cartMount"></div><div id="authMount"></div>
+<main>
+  <div class="about-split">
+    <div class="about-media">
+      <img src="../assets/drop-shoulder/gojo-teal-front.jpeg" alt="Prichoy drop shoulder collection">
+    </div>
+    <div class="about-text">
+      <span class="label" style="margin-bottom:14px">Our Story</span>
+      <h2>Style for<br><em>Everyday.</em></h2>
+      <p>Prichoy was born in 2026 from a simple belief: every man deserves to feel confident and comfortable in what he wears.</p>
+      <p>From our Facebook community to a full e-commerce store, we are building a considered destination for modern men's style.</p>
+      <div class="about-nums">
+        <div><div class="about-num-val">2026</div><div class="about-num-label">Founded</div></div>
+        <div><div class="about-num-val">1</div><div class="about-num-label">Focused Collection</div></div>
+        <div><div class="about-num-val">COD</div><div class="about-num-label">Easy Payment</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Values -->
+  <section class="values-section">
+    <div style="max-width:1200px;margin:0 auto">
+      <div class="section-head fade-up">
+        <span class="label">What We Stand For</span>
+        <h2 class="display-md">Our Values</h2>
+      </div>
+      <div class="values-grid">
+        <div class="val-card"><div class="val-icon">👕</div><div class="val-name">Men's Essentials</div><p class="val-text">Premium drop-shoulder tees made for confident everyday style.</p></div>
+        <div class="val-card"><div class="val-icon">💎</div><div class="val-name">Quality First</div><p class="val-text">Every stitch, every fabric, every detail chosen with the utmost care and craftsmanship.</p></div>
+        <div class="val-card"><div class="val-icon">🤝</div><div class="val-name">Customer Love</div><p class="val-text">Our customers are our community. Their happiness drives everything we do.</p></div>
+        <div class="val-card"><div class="val-icon">🚀</div><div class="val-name">Growing Together</div><p class="val-text">We're just beginning. Every order helps us grow into something extraordinary.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Timeline -->
+  <section class="timeline-section">
+    <div class="timeline-inner">
+      <div class="section-head fade-up">
+        <span class="label">Our Journey</span>
+        <h2 class="display-md">Just Getting Started</h2>
+      </div>
+      <div class="tl">
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-year">2026</div>
+          <div class="tl-text"><strong>The Beginning:</strong> Prichoy launched on Facebook with a commitment to premium men's clothing and fast delivery across Bangladesh.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-year">Now</div>
+          <div class="tl-text"><strong>Today:</strong> We are focused on a stronger men's collection, from refined everyday staples to festive essentials.</div>
+        </div>
+        <div class="tl-item" style="opacity:.4">
+          <div class="tl-dot" style="background:var(--line);box-shadow:none"></div>
+          <div class="tl-year" style="color:var(--ink-muted)">Soon</div>
+          <div class="tl-text" style="color:var(--ink-muted)"><strong>What's Next:</strong> Exclusive seasonal collections, bridal packages, student discounts, and loyalty rewards. Stay with us — the best is yet to come! 🌸</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Editorial CTA -->
+  <section class="editorial editorial-women">
+    <div class="editorial-media">
+      <img src="../assets/drop-shoulder/panda-purple-back.jpeg" alt="Drop shoulder collection">
+    </div>
+    <div class="editorial-content">
+      <span class="label label-women">Start Shopping</span>
+      <h2>Find Your<br><em>Perfect Look.</em></h2>
+      <p>Browse our full collection of men's and women's fashion — curated with love for Bangladesh.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a href="shop.html?gender=women" class="btn btn-women btn-lg">👗 Women →</a>
+        <a href="shop.html?gender=men"   class="btn btn-men   btn-lg">👔 Men →</a>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="footerMount"></div>
+<script src="../js/components.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  document.querySelectorAll('.editorial-women, a[href*="gender=women"]').forEach(function(el){ el.remove(); });
+  document.getElementById("navMount").innerHTML    = renderNav("about", true);
+  document.getElementById("cartMount").innerHTML   = renderCart();
+  document.getElementById("authMount").innerHTML   = renderAuthModal();
+  document.getElementById("footerMount").innerHTML = renderFooter(true);
+</script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Product — Prichoy Clothing</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div id="navMount"></div><div id="cartMount"></div><div id="authMount"></div>
+<main id="pdpMain">
+  <div style="text-align:center;padding:80px 24px;color:var(--ink-muted);font-family:var(--ff-serif);font-style:italic">Loading…</div>
+</main>
+<div id="footerMount"></div>
+<script src="../js/components.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  document.getElementById("navMount").innerHTML    = renderNav("shop", true);
+  document.getElementById("cartMount").innerHTML   = renderCart();
+  document.getElementById("authMount").innerHTML   = renderAuthModal();
+  document.getElementById("footerMount").innerHTML = renderFooter(true);
+
+  var slug = new URLSearchParams(window.location.search).get("slug");
+  var p = null;              // adapted product (see api.js adaptProduct())
+  var selSizeVal = null, selColorId = null, selQty = 1;
+  var activeColorImages = [];
+
+  function buildPage(prod){
+    p = prod;
+    document.title = p.name + " — Prichoy";
+    var isM = p.gender === "men";
+    selColorId = p.colors[0]?.id ?? null;
+    activeColorImages = galleryForColor(selColorId);
+
+    var disc = p.originalPrice ? Math.round((1-p.price/p.originalPrice)*100) : 0;
+    var accentBtn  = isM ? "btn-men"   : "btn-women";
+    var accentCol  = isM ? "var(--men)": "var(--women)";
+    var genderTag  = isM ? '<span class="p-card-gender"><span class="tag-men">👔 Men\'s</span></span>' : '<span class="p-card-gender"><span class="tag-women">👗 Women\'s</span></span>';
+
+    document.getElementById("pdpMain").innerHTML = `
+      <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><a href="shop.html">Shop</a><span class="sep">›</span><span>${p.name}</span></div>
+      <div class="pdp-wrap">
+        <!-- Gallery -->
+        <div class="pdp-gallery">
+          <div class="g-main">
+            <img id="gMainImg" src="${galleryImg(0)}" alt="${p.name}" onerror="this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=700&q=80'">
+          </div>
+          <div class="g-thumbs" id="gThumbs">
+            ${renderThumbs()}
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="pdp-info">
+          ${genderTag}
+          <span class="label" style="color:${accentCol};margin-bottom:10px;display:inline-block">${p.category}</span>
+          ${p.badge ? '<span class="p-card-badge badge-'+p.badge.toLowerCase().replace(" ","-")+'" style="position:relative;top:auto;left:auto;margin-left:8px">'+p.badge+'</span>' : ""}
+          <h1 class="pdp-name">${p.name}</h1>
+          <div class="pdp-stock" id="pdpStock"><span class="pdp-stock-dot"></span>In Stock — Ready to Ship</div>
+
+          <div class="pdp-price">
+            <span class="pdp-price-now">৳${p.price.toLocaleString()}</span>
+            ${p.originalPrice ? '<span class="pdp-price-was">৳'+p.originalPrice.toLocaleString()+'</span>' : ""}
+            ${disc>=5 ? '<span class="pdp-price-pct">'+disc+'% OFF</span>' : ""}
+          </div>
+
+          <p class="pdp-desc">${p.description}</p>
+
+          ${p.colors.length > 1 || p.colors[0].id ? `
+          <!-- Colour -->
+          <div class="opt-label">Colour</div>
+          <div class="color-opts" id="colOpts">
+            ${p.colors.map(function(c,i){ return '<div class="col-dot '+(i===0?"on":"")+'" style="background:'+c.hex+'" onclick="selCol(\''+c.id+'\',this)" title="'+c.name+'"></div>'; }).join("")}
+          </div>` : ""}
+
+          <!-- Size -->
+          <div class="opt-label">Size ${p.sizeGuide ? '&nbsp;<a href="#sizeGuide" style="font-size:.68rem;color:var(--green);font-weight:600;text-transform:none;letter-spacing:0">Size Guide</a>' : ""}</div>
+          <div class="size-opts" id="sizeOpts">
+            ${p.sizes.map(function(s){ return '<button class="sz-btn" onclick="selSz(\''+s+'\',this)">'+s+'</button>'; }).join("")}
+          </div>
+
+          <!-- Qty -->
+          <div class="opt-label">Quantity</div>
+          <div class="qty-row">
+            <button class="qty-b2" onclick="chgQty(-1)">−</button>
+            <input type="number" class="qty-n" id="qtyN" value="1" min="1" max="20" onchange="setQty(this.value)">
+            <button class="qty-b2" onclick="chgQty(1)">+</button>
+          </div>
+
+          <!-- CTAs -->
+          <div class="pdp-ctas">
+            <button class="btn btn-black btn-lg" id="addBtn" onclick="doAdd()">Add to Cart 🛍️</button>
+            <button class="btn ${accentBtn} btn-lg" id="buyBtn" onclick="doBuy()">Buy Now →</button>
+            <button class="nav-icon-btn" data-wid="${p.id}"
+              onclick="wishToggle('${p.id}'); this.innerHTML=isWished('${p.id}')?'♥':'♡'; this.classList.toggle('loved',isWished('${p.id}'))"
+              style="border:1.5px solid var(--line);border-radius:var(--r-full);width:auto;padding:0 16px;font-size:1.1rem"
+              title="Wishlist">${isWished(p.id)?"♥":"♡"}</button>
+          </div>
+
+          <div class="pdp-guarantee">
+            <span class="g-item">🚚 48hr Dhaka delivery</span>
+            <span class="g-item">✅ Check on delivery</span>
+            <span class="g-item">💵 Cash on delivery</span>
+            <span class="g-item">🔒 Secure order</span>
+          </div>
+
+          <!-- Tabs -->
+          <div class="pdp-tabs-wrap" id="sizeGuide">
+            <div class="pdp-tab-btns">
+              <button class="pdp-tab-btn on" onclick="swTab('desc',this)">Description</button>
+              <button class="pdp-tab-btn"    onclick="swTab('fabric',this)">Fabric &amp; Care</button>
+              ${p.sizeGuide ? '<button class="pdp-tab-btn" onclick="swTab(\'sizeguide\',this)">Size Guide</button>' : ""}
+              <button class="pdp-tab-btn"    onclick="swTab('delivery',this)">Delivery</button>
+            </div>
+            <div id="tab-desc" class="pdp-tab-pane on">
+              <p>${p.description}</p>
+              <ul style="margin-top:12px;padding-left:18px;list-style:disc;line-height:2.1">
+                <li>Available sizes: ${p.sizes.join(", ")}</li>
+                <li>${isM?"Men's tailored fit":"Women's curated silhouette"}</li>
+                <li>Perfect for ${isM?"everyday and ethnic wear":"casual, festive and semi-formal occasions"}</li>
+              </ul>
+            </div>
+            <div id="tab-fabric" class="pdp-tab-pane">
+              <p><strong>Fabric:</strong> ${p.fabric || "—"}</p>
+              <p style="margin-top:10px"><strong>Care Instructions:</strong> ${p.care || "—"}</p>
+              ${p.countryOfOrigin ? '<p style="margin-top:10px"><strong>Country of Origin:</strong> '+p.countryOfOrigin+'</p>' : ""}
+            </div>
+            ${p.sizeGuide ? `
+            <div id="tab-sizeguide" class="pdp-tab-pane">
+              ${p.sizeGuide.imageUrl ? '<img src="'+p.sizeGuide.imageUrl+'" alt="Size guide" style="max-width:100%;border-radius:var(--r-lg);margin-bottom:14px">' : ""}
+              ${p.sizeGuide.notes ? '<p style="margin-bottom:12px">'+p.sizeGuide.notes+'</p>' : ""}
+            </div>` : ""}
+            <div id="tab-delivery" class="pdp-tab-pane">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+                <div style="background:var(--green-bg);border:1.5px solid var(--green-bg2);border-radius:var(--r-lg);padding:18px;text-align:center">
+                  <div style="font-size:1.4rem;margin-bottom:6px">🏙️</div>
+                  <div style="font-family:var(--ff-serif);font-size:1.4rem;font-weight:500;color:var(--green)">৳80</div>
+                  <div style="font-size:.62rem;letter-spacing:1px;text-transform:uppercase;color:var(--green-2);margin:4px 0">Dhaka City</div>
+                  <div style="font-size:.75rem;color:var(--green-lt)">Within 48 hours</div>
+                </div>
+                <div style="background:var(--light);border:1.5px solid var(--line);border-radius:var(--r-lg);padding:18px;text-align:center">
+                  <div style="font-size:1.4rem;margin-bottom:6px">🗺️</div>
+                  <div style="font-family:var(--ff-serif);font-size:1.4rem;font-weight:500;color:var(--ink)">৳120</div>
+                  <div style="font-size:.62rem;letter-spacing:1px;text-transform:uppercase;color:var(--ink-muted);margin:4px 0">Outside Dhaka</div>
+                  <div style="font-size:.75rem;color:var(--ink-soft)">Within 72 hours</div>
+                </div>
+              </div>
+              <div style="background:var(--green-bg);border-left:3px solid var(--green);border-radius:var(--r-md);padding:14px 16px">
+                <strong style="font-size:.78rem;color:var(--green-2)">Return Policy:</strong>
+                <p style="font-size:.78rem;color:var(--green-2);margin-top:5px;line-height:1.8">You may check the product in front of the delivery person. If not satisfied, return it on the spot with delivery charge. No returns accepted after the delivery person leaves.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    loadRelated();
+    updateStockUI();
+    observeCards();
+  }
+
+  // ── Color-driven gallery (Phase 3 §3: "when customer changes color, gallery must switch") ──
+  function galleryForColor(colorId){
+    var color = p.colors.find(function(c){ return c.id === colorId; });
+    if(color && color.images && color.images.length) return color.images.map(function(i){return i.url;});
+    if(p.images && p.images.length) return p.images.map(function(i){return i.url;});
+    return [p.image];
+  }
+  function galleryImg(i){ return activeColorImages[i] || activeColorImages[0] || p.image; }
+  function renderThumbs(){
+    return activeColorImages.map(function(img,i){
+      return '<div class="g-thumb '+(i===0?"on":"")+'" onclick="switchImg('+i+')" id="gth'+i+'"><img src="'+img+'" alt="View '+(i+1)+'"></div>';
+    }).join("");
+  }
+  function switchImg(i){
+    document.getElementById("gMainImg").src = galleryImg(i);
+    document.querySelectorAll(".g-thumb").forEach(function(t,j){ t.classList.toggle("on",j===i); });
+  }
+
+  function loadRelated(){
+    api.getProducts({ category: p.categorySlug, limit: 8 }).then(function(res){
+      var related = (res.data || []).map(adaptProduct).filter(function(x){ return x.id!==p.id; }).slice(0,4);
+      if(!related.length) return;
+      var sec = document.createElement("section");
+      sec.className = "products-section"; sec.style.paddingTop="0";
+      sec.innerHTML = '<div class="products-inner"><div class="section-head"><span class="label">You May Also Like</span><h2 class="display-md">More Picks</h2></div><div class="products-grid" id="relGrid"></div></div>';
+      document.getElementById("footerMount").before(sec);
+      renderProducts(related, "relGrid");
+    }).catch(function(){ /* related products are a nice-to-have — a failure here shouldn't disrupt the PDP */ });
+  }
+
+  function updateStockUI(){
+    var variant = (selSizeVal) ? findVariant(p, selSizeVal, selColorId) : null;
+    var stockEl = document.getElementById("pdpStock");
+    var addBtn = document.getElementById("addBtn"), buyBtn = document.getElementById("buyBtn");
+    var outOfStock = variant && variant.stock <= 0;
+    if(stockEl){
+      stockEl.innerHTML = outOfStock
+        ? '<span class="pdp-stock-dot" style="background:var(--danger,#c0392b)"></span>Out of Stock'
+        : '<span class="pdp-stock-dot"></span>In Stock — Ready to Ship';
+    }
+    if(addBtn) addBtn.disabled = !!outOfStock;
+    if(buyBtn) buyBtn.disabled = !!outOfStock;
+  }
+
+  function selSz(s,btn){ selSizeVal=s; document.querySelectorAll(".sz-btn").forEach(function(b){b.classList.remove("on");}); btn.classList.add("on"); updateStockUI(); }
+  function selCol(colorId,el){
+    selColorId = colorId === "null" ? null : colorId;
+    document.querySelectorAll(".col-dot").forEach(function(d){d.classList.remove("on");}); el.classList.add("on");
+    activeColorImages = galleryForColor(selColorId);
+    document.getElementById("gThumbs").innerHTML = renderThumbs();
+    switchImg(0);
+    updateStockUI();
+  }
+  function chgQty(d){ selQty=Math.max(1,Math.min(20,selQty+d)); document.getElementById("qtyN").value=selQty; }
+  function setQty(v){ selQty=Math.max(1,Math.min(20,parseInt(v)||1)); document.getElementById("qtyN").value=selQty; }
+  function swTab(id,btn){ document.querySelectorAll(".pdp-tab-btn").forEach(function(b){b.classList.remove("on");}); document.querySelectorAll(".pdp-tab-pane").forEach(function(pn){pn.classList.remove("on");}); btn.classList.add("on"); document.getElementById("tab-"+id)?.classList.add("on"); }
+  function doAdd(){
+    if(p.sizes[0]!=="One Size" && !selSizeVal){toast("Please select a size","err");return;}
+    var variant = findVariant(p, selSizeVal, selColorId);
+    if(variant && variant.stock<=0){toast("This option is out of stock","err");return;}
+    cartAdd(p, selQty, selSizeVal||"One Size", selColorId, variant);
+    openCart();
+  }
+  function doBuy(){
+    if(p.sizes[0]!=="One Size" && !selSizeVal){toast("Please select a size","err");return;}
+    var variant = findVariant(p, selSizeVal, selColorId);
+    if(variant && variant.stock<=0){toast("This option is out of stock","err");return;}
+    cartAdd(p, selQty, selSizeVal||"One Size", selColorId, variant);
+    window.location.href="checkout.html";
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    if(!slug){
+      document.getElementById("pdpMain").innerHTML='<div style="text-align:center;padding:80px 24px"><h2 style="font-family:var(--ff-serif);font-size:2rem;margin-bottom:16px">Product not found</h2><a href="shop.html" class="btn btn-black">Back to Shop</a></div>';
+      return;
+    }
+    api.getProductBySlug(slug).then(function(res){
+      buildPage(adaptProduct(res.data));
+    }).catch(function(){
+      document.getElementById("pdpMain").innerHTML='<div style="text-align:center;padding:80px 24px"><h2 style="font-family:var(--ff-serif);font-size:2rem;margin-bottom:16px">Product not found</h2><a href="shop.html" class="btn btn-black">Back to Shop</a></div>';
+    });
+  });
+</script>
+</body>
+</html>

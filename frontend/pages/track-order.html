@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Track My Order — PRICHOY</title>
+<link rel="stylesheet" href="../css/track-order.css" />
+</head>
+<body>
+  <header class="brand-header">
+    <a href="https://www.prichoy.com" class="brand-logo">PRICHOY</a>
+  </header>
+
+  <main class="track-container">
+    <h1>Track My Order</h1>
+    <p class="subtitle">Enter your order number and the phone number used at checkout.</p>
+
+    <form id="track-form" class="track-form">
+      <label>
+        Order Number
+        <input type="text" id="orderNo" name="orderNo" placeholder="e.g. PRC-000123" required />
+      </label>
+      <label>
+        Phone Number
+        <input type="tel" id="phone" name="phone" placeholder="01XXXXXXXXX" required />
+      </label>
+      <button type="submit" id="track-submit">Track Order</button>
+    </form>
+
+    <p id="form-error" class="form-error" hidden></p>
+
+    <section id="result" class="result" hidden>
+      <div class="result-header">
+        <div>
+          <div class="result-order-no"></div>
+          <div class="result-date"></div>
+        </div>
+        <div class="result-status-badge"></div>
+      </div>
+
+      <div class="result-detail">
+        <div><span>Courier:</span> <span class="result-courier">—</span></div>
+        <div><span>Tracking No:</span> <span class="result-tracking-number">—</span></div>
+        <div><span>Estimated Delivery:</span> <span class="result-eta">—</span></div>
+      </div>
+
+      <h2>Timeline</h2>
+      <ol id="timeline" class="timeline"></ol>
+    </section>
+  </main>
+
+  <footer class="brand-footer">
+    <div>PRICHOY — Clothing</div>
+    <div>
+      <a href="https://www.prichoy.com">www.prichoy.com</a> ·
+      <a href="https://www.facebook.com/PRICHOY/">Facebook</a> ·
+      Support: 01762647661
+    </div>
+  </footer>
+
+  <script src="../js/track-order.js"></script>
+</body>
+</html>
