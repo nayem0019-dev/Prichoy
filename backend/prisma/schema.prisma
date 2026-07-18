@@ -1,0 +1,1106 @@
+// ================================================
+// PRICHOY ERP — Complete Prisma Schema
+// Database: MySQL (MariaDB compatible)
+// ================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================================
+// ENUMS
+// ================================================
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  ORDER_MANAGER
+  INVENTORY_MANAGER
+  CUSTOMER_SUPPORT
+  DELIVERY_MANAGER
+  ACCOUNTANT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  UNISEX
+}
+
+// Phase 3 §1 — product publication state. See the Product model comment
+// for how this coexists with the pre-existing `isActive` boolean.
+enum ProductStatus {
+  PUBLISHED
+  DRAFT
+  HIDDEN
+  COMING_SOON
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  CUSTOMER_VERIFIED
+  CONFIRMED
+  PACKING
+  PACKED
+  COURIER_ASSIGNED
+  DISPATCHED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  RETURN_REQUESTED
+  RETURNED
+  CLOSED
+  // REFUNDED is not part of the Phase 2 spec's status diagram, but it was
+  // pre-existing functionality (Refund model + processRefund flow) that we
+  // were told not to remove. Kept as an additional terminal branch reachable
+  // only from DELIVERED / RETURNED / CLOSED — see ORDER_STATUS_FLOW.
+  REFUNDED
+}
+
+// Email types Phase 2 sends automatically. Kept as a plain string on EmailLog
+// (not an enum) so a future email type can be added without a migration,
+// but this const list is the source of truth for what actually triggers.
+enum EmailType {
+  ORDER_PLACED
+  ORDER_CONFIRMED
+  ORDER_DISPATCHED
+  ORDER_DELIVERED
+  ORDER_CANCELLED
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum PaymentMethod {
+  COD
+  BKASH
+  NAGAD
+  CARD
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  PARTIALLY_PAID
+  REFUNDED
+  PENDING
+}
+
+enum StockMovementType {
+  STOCK_IN
+  STOCK_OUT
+  ADJUSTMENT
+  TRANSFER
+  PURCHASE
+  RETURN
+  RESERVE
+  UNRESERVE
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum CustomerTag {
+  VIP
+  REGULAR
+  NEW
+  BLOCKED
+  FREQUENT
+  WHOLESALE
+  // Phase 3 §16 additions
+  PRIORITY
+  HIGH_RETURN_RISK
+  HIGH_CANCELLATION_RISK
+}
+
+enum NotificationType {
+  NEW_ORDER
+  ORDER_CANCELLED
+  ORDER_RETURNED
+  LOW_STOCK
+  OUT_OF_STOCK
+  NEW_CUSTOMER
+  PAYMENT_RECEIVED
+  REFUND_REQUESTED
+}
+
+enum ExpenseCategory {
+  COURIER
+  MARKETING
+  SALARY
+  OFFICE
+  PACKAGING
+  MISCELLANEOUS
+}
+
+// ================================================
+// USERS (Admin Staff)
+// ================================================
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  phone         String?
+  password      String
+  role          Role      @default(ORDER_MANAGER)
+  isActive      Boolean   @default(true)
+  avatar        String?
+  lastLoginAt   DateTime?
+  lastLoginIp   String?
+  lastLoginUserAgent String? @db.Text
+  failedLoginAttempts Int   @default(0)
+  lockedUntil   DateTime?
+  refreshTokens RefreshToken[]
+  activityLogs  ActivityLog[]
+  orderHistories OrderHistory[]
+  verifiedOrders Order[]  @relation("OrderVerifiedBy")
+  orderNotes     OrderNote[]
+  contactLogs    OrderContactLog[]
+  customerNotes  CustomerNote[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  // SHA-256 hash of the refresh token JWT, never the raw token itself.
+  // If the database is ever compromised, the raw tokens are NOT directly
+  // recoverable/usable from this column (unlike storing the JWT verbatim).
+  tokenHash String   @unique @db.VarChar(64)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  ip        String?
+  userAgent String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ================================================
+// CUSTOMERS (Auto-created on first order)
+// ================================================
+
+model Customer {
+  id              String        @id @default(uuid())
+  name            String
+  phone           String        @unique
+  email           String?       @unique
+  passwordHash    String?
+  isVerified      Boolean       @default(false)
+  tag             CustomerTag   @default(NEW)
+  tags            CustomerTagAssignment[]
+  isBlocked       Boolean       @default(false)
+  blockReason     String?
+  // Phase 3 §18 — "Created By"/"Created Time" for the blacklist action.
+  // isBlocked/blockReason already existed; these two were missing.
+  blockedById     String?
+  blockedAt       DateTime?
+  notes           String?       @db.Text
+  customerNotes   CustomerNote[]
+  totalOrders     Int           @default(0)
+  totalSpent      Decimal       @default(0) @db.Decimal(12, 2)
+  averageOrder    Decimal       @default(0) @db.Decimal(12, 2)
+  lastOrderAt     DateTime?
+  // ── Fraud detection (Phase 2 §16) ──────────────────────────────
+  // Cached counters, recalculated every time an order of theirs is
+  // cancelled or returned (see fraud.service.ts). Cached rather than
+  // computed on every read because customer list/detail views are hit
+  // far more often than cancellations/returns happen.
+  cancelledOrders Int           @default(0)
+  returnedOrders  Int           @default(0)
+  isFraudRisk     Boolean       @default(false)
+  // ── Soft delete (Phase 2 §18) ──────────────────────────────────
+  isDeleted       Boolean       @default(false)
+  deletedAt       DateTime?
+  deletedBy       String?
+  addresses       Address[]
+  orders          Order[]
+  notifications   Notification[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([phone])
+  @@index([email])
+  @@index([isFraudRisk])
+  @@map("customers")
+}
+
+// Phase 3 §17 — Internal Customer Notes, admin-only. Same reasoning as
+// OrderNote (Phase 2.1 §2): the pre-existing Customer.notes column is a
+// single field overwritten on every write (still used by the legacy
+// addNote()/notes field, untouched) and can't hold multiple notes or
+// per-note Created By/Created Time/Last Updated.
+model CustomerNote {
+  id          String   @id @default(uuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  note        String   @db.Text
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([customerId])
+  @@map("customer_notes")
+}
+
+// Phase 3 §16 — multiple simultaneous tags per customer (e.g. VIP AND High
+// Return Risk at once). The pre-existing `Customer.tag` is a single enum
+// column (one tag at a time) and stays exactly as-is for backward
+// compatibility with anything already reading/writing it; this is an
+// additive parallel mechanism, not a replacement.
+model CustomerTagAssignment {
+  id         String      @id @default(uuid())
+  customerId String
+  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  tag        CustomerTag
+  createdAt  DateTime    @default(now())
+
+  @@unique([customerId, tag])
+  @@index([customerId])
+  @@map("customer_tag_assignments")
+}
+
+model Address {
+  id          String    @id @default(uuid())
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  label       String?   // e.g. "Home", "Office"
+  line1       String
+  thana       String
+  district    String
+  division    String?
+  postalCode  String?
+  isDefault   Boolean   @default(false)
+  orders      Order[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([customerId])
+  @@map("addresses")
+}
+
+// ================================================
+// PRODUCTS
+// ================================================
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  gender      Gender?
+  image       String?
+  icon        String?
+  description String?   @db.Text
+  isActive    Boolean   @default(true)
+  // Phase 3 §8 — subcategories via self-relation. A "Category" and a
+  // "Sub Category" are both just Category rows; a product picks whichever
+  // level is the right leaf (e.g. "T-Shirts" with parent "Men's") rather
+  // than needing a separate subCategoryId column on Product — see the
+  // Phase 3 report's "Product Management" section for why this was chosen
+  // over a literal second FK.
+  parentId    String?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  displayOrder Int      @default(0)
+  products    Product[]
+  // ── Soft delete (Phase 3 §24) ──────────────────────────────────
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  deletedBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([parentId])
+  @@index([isDeleted])
+  @@map("categories")
+}
+
+model Brand {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  logo        String?
+  description String?
+  isActive    Boolean   @default(true)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("brands")
+}
+
+model Supplier {
+  id          String     @id @default(uuid())
+  name        String
+  phone       String?
+  email       String?
+  address     String?
+  notes       String?    @db.Text
+  isActive    Boolean    @default(true)
+  products    Product[]
+  purchases   Purchase[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("suppliers")
+}
+
+model Product {
+  id              String        @id @default(uuid())
+  name            String
+  slug            String        @unique
+  // "Full Description" per Phase 3 §1. Kept the existing column name
+  // (`description`) rather than renaming it — every pre-existing read/write
+  // of this field (product.service.ts, exports, etc.) keeps working
+  // unchanged. `shortDescription` is the new field.
+  description     String?       @db.Text
+  shortDescription String?      @db.Text
+  sku             String        @unique
+  barcode         String?       @unique
+  gender          Gender?
+  categoryId      String
+  category        Category      @relation(fields: [categoryId], references: [id])
+  brandId         String?
+  brand           Brand?        @relation(fields: [brandId], references: [id])
+  supplierId      String?
+  supplier        Supplier?     @relation(fields: [supplierId], references: [id])
+  costPrice       Decimal       @db.Decimal(10, 2)
+  sellingPrice    Decimal       @db.Decimal(10, 2)
+  salePrice       Decimal?      @db.Decimal(10, 2)
+  profitMargin    Decimal?      @db.Decimal(5, 2)
+  weight          Decimal?      @db.Decimal(8, 3)
+  // Phase 3 §1 — apparel-specific attributes, all optional so existing
+  // products (and any code that creates a Product without them) are
+  // unaffected.
+  season          String?
+  material        String?
+  careInstructions String?      @db.Text
+  countryOfOrigin String?
+  // Phase 3 §1 — publication status. Kept ALONGSIDE the existing `isActive`
+  // boolean rather than replacing it, since isActive is already read by
+  // getLowStock/getTopSelling/exports/etc. The service layer keeps the two
+  // in sync (status=PUBLISHED => isActive=true, anything else => false) so
+  // none of that existing code needed to change.
+  status          ProductStatus @default(DRAFT)
+  // Phase 3 §21 — SEO. All optional; slug already serves as the friendly
+  // URL, so there's no separate "SEO slug" field on Product.
+  seoTitle        String?
+  seoDescription  String?       @db.Text
+  seoKeywords     String?
+  ogImage         String?
+  canonicalUrl    String?
+  images          ProductImage[]
+  variants        Variant[]
+  colors          ProductColor[]
+  labels          ProductLabelAssignment[]
+  collections     ProductCollection[]
+  sizeGuide       ProductSizeGuide?
+  inventories     Inventory[]
+  orderItems      OrderItem[]
+  purchaseItems   PurchaseItem[]
+  isActive        Boolean       @default(true)
+  isFeatured      Boolean       @default(false)
+  totalSold       Int           @default(0)
+  // ── Soft delete (Phase 2 §18) ──────────────────────────────────
+  isDeleted       Boolean       @default(false)
+  deletedAt       DateTime?
+  deletedBy       String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([sku])
+  @@index([isDeleted])
+  @@index([status])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  // Phase 3 §4 — populated by image.service.ts when the image was uploaded
+  // through the new upload endpoint; null for images added by URL only
+  // (e.g. bulk import), which is a normal, supported case, not an error.
+  thumbnailUrl String?
+  webpUrl      String?
+  alt       String?
+  isPrimary Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+model Variant {
+  id          String      @id @default(uuid())
+  productId   String
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name        String      // e.g. "Size", "Color"
+  value       String      // e.g. "L", "Red"
+  sku         String?     @unique
+  // Phase 3 §2 — barcode + sale price per variant.
+  barcode     String?     @unique
+  price       Decimal?    @db.Decimal(10, 2)
+  salePrice   Decimal?    @db.Decimal(10, 2)
+  stock       Int         @default(0)
+  reserved    Int         @default(0)
+  // Mirrors Inventory.lowStockAlert — a configurable per-variant threshold
+  // now that variant stock is a real, order-affecting number (Phase 3.1)
+  // rather than just a display field.
+  lowStockAlert Int       @default(5)
+  image       String?
+  // Phase 3 §3 — optional link to a ProductColor, whose own image gallery
+  // is what the storefront swaps to when the customer picks this variant's
+  // color. Nullable so pre-existing flat (name/value only) variants are
+  // completely unaffected; a clothing product created going forward would
+  // set this to combine a color with `name="Size"`/`value="M"` etc. — one
+  // Variant row per color+size combination, each with its own SKU/barcode/
+  // price/stock, per Phase 3 §2 ("unlimited variants").
+  colorId     String?
+  color       ProductColor? @relation(fields: [colorId], references: [id])
+  // "Status" per Phase 3 §2 — reused the existing isActive boolean rather
+  // than adding a parallel enum; a variant is either sellable or not, and
+  // the existing StockMovementType/adjustStock flow already treats
+  // "inactive" the way a dedicated status field would.
+  isActive    Boolean     @default(true)
+  // ── Soft delete (Phase 3 §24) ──────────────────────────────────
+  isDeleted   Boolean     @default(false)
+  deletedAt   DateTime?
+  deletedBy   String?
+  orderItems  OrderItem[]
+  stockMovements StockMovement[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([productId])
+  @@index([colorId])
+  @@map("variants")
+}
+
+// Phase 3 §3 — one row per color a product comes in. Owns that color's
+// image gallery (ProductColorImage[]) and groups every Variant (size) sold
+// in that color. This is the "better implementation than requested" flagged
+// in the Phase 3 report: the spec's Variant examples (Color: Black/White/
+// Blue, Size: S/M/L) read as two independent lists, but a real order line
+// needs a specific color+size combination with its own stock/price, and an
+// image gallery genuinely belongs to a color, not to each size within it —
+// duplicating the same 3 images across 5 size rows for one color would be
+// wrong. ProductColor is the minimal model that avoids that duplication.
+model ProductColor {
+  id           String   @id @default(uuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name         String   // e.g. "Black"
+  hexCode      String?  // optional swatch color, e.g. "#111827"
+  displayOrder Int      @default(0)
+  images       ProductColorImage[]
+  variants     Variant[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([productId, name])
+  @@index([productId])
+  @@map("product_colors")
+}
+
+model ProductColorImage {
+  id        String       @id @default(uuid())
+  colorId   String
+  color     ProductColor @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  url       String
+  thumbnailUrl String?
+  webpUrl      String?
+  alt       String?
+  isPrimary Boolean      @default(false)
+  order     Int          @default(0)
+  createdAt DateTime     @default(now())
+
+  @@index([colorId])
+  @@map("product_color_images")
+}
+
+// Phase 3 §5 — Product Labels. A fixed enum (matching the spec's exact
+// example set) rather than an admin-manageable Label table — "avoid
+// overengineering": there's no requirement for admins to invent arbitrary
+// new labels, just to assign/unassign from the given set, and an enum
+// keeps that a one-line schema change if the set ever needs to grow.
+enum ProductLabel {
+  NEW
+  BEST_SELLER
+  TRENDING
+  SALE
+  LIMITED
+  PREMIUM
+  FEATURED
+}
+
+model ProductLabelAssignment {
+  id        String       @id @default(uuid())
+  productId String
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  label     ProductLabel
+  createdAt DateTime     @default(now())
+
+  @@unique([productId, label])
+  @@index([productId])
+  @@map("product_label_assignments")
+}
+
+// Phase 3 §6 — Featured Products / Collections. Unlike labels, the spec
+// explicitly asks for these to be admin-manageable "without editing code"
+// (Homepage, Featured Collection, Seasonal Collection, New Arrival are
+// given as *examples*, not an exhaustive fixed set) — so this is a real
+// table, not an enum, letting an admin create/rename/retire collections
+// through the API.
+model Collection {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  slug         String   @unique
+  description  String?  @db.Text
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  products     ProductCollection[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("collections")
+}
+
+model ProductCollection {
+  id           String     @id @default(uuid())
+  productId    String
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([productId, collectionId])
+  @@index([productId])
+  @@index([collectionId])
+  @@map("product_collections")
+}
+
+// Phase 3 §7 — Size Guide. One optional row per product. measurementTable
+// is stored as a JSON string (consistent with how Return.images and
+// Setting values already store JSON-as-text elsewhere in this schema)
+// rather than a separate rows-and-columns table, since the table shape
+// varies per product/category and isn't queried on — just displayed.
+model ProductSizeGuide {
+  id               String   @id @default(uuid())
+  productId        String   @unique
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  imageUrl         String?
+  measurementTable String?  @db.Text // JSON: e.g. [{"size":"M","chest":40,"length":28}, ...]
+  notes            String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("product_size_guides")
+}
+
+// ================================================
+// INVENTORY
+// ================================================
+
+model Warehouse {
+  id          String       @id @default(uuid())
+  name        String
+  location    String?
+  isDefault   Boolean      @default(false)
+  isActive    Boolean      @default(true)
+  inventories Inventory[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("warehouses")
+}
+
+model Inventory {
+  id            String         @id @default(uuid())
+  productId     String
+  product       Product        @relation(fields: [productId], references: [id])
+  warehouseId   String
+  warehouse     Warehouse      @relation(fields: [warehouseId], references: [id])
+  quantity      Int            @default(0)
+  reserved      Int            @default(0)
+  lowStockAlert Int            @default(10)
+  movements     StockMovement[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([productId, warehouseId])
+  @@index([productId])
+  @@map("inventories")
+}
+
+model StockMovement {
+  id            String            @id @default(uuid())
+  inventoryId   String
+  inventory     Inventory         @relation(fields: [inventoryId], references: [id])
+  // Phase 3.1 — which specific variant (color/size) this movement was for,
+  // when the order line had one. Nullable: plain product-level movements
+  // (manual adjustments, non-variant products) leave this unset. See
+  // inventoryService.reduceStockForOrder()/restoreStockForOrder() for why
+  // Variant.stock now moves in lockstep with Inventory.quantity instead of
+  // being ignored by the order pipeline.
+  variantId     String?
+  variant       Variant?          @relation(fields: [variantId], references: [id])
+  type          StockMovementType
+  quantity      Int
+  previousStock Int
+  newStock      Int
+  reason        String?
+  reference     String?           // Order ID, Purchase ID, etc.
+  adminId       String?
+  note          String?
+  createdAt     DateTime          @default(now())
+
+  @@index([inventoryId])
+  @@index([variantId])
+  @@map("stock_movements")
+}
+
+// ================================================
+// PURCHASES
+// ================================================
+
+model Purchase {
+  id            String         @id @default(uuid())
+  purchaseNo    String         @unique
+  supplierId    String
+  supplier      Supplier       @relation(fields: [supplierId], references: [id])
+  status        String         @default("PENDING")
+  totalAmount   Decimal        @db.Decimal(12, 2)
+  paidAmount    Decimal        @default(0) @db.Decimal(12, 2)
+  dueAmount     Decimal        @default(0) @db.Decimal(12, 2)
+  note          String?
+  items         PurchaseItem[]
+  receivedAt    DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id          String   @id @default(uuid())
+  purchaseId  String
+  purchase    Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  unitCost    Decimal  @db.Decimal(10, 2)
+  totalCost   Decimal  @db.Decimal(12, 2)
+  received    Int      @default(0)
+
+  @@index([purchaseId])
+  @@map("purchase_items")
+}
+
+// ================================================
+// COURIERS
+// ================================================
+
+model Courier {
+  id          String   @id @default(uuid())
+  name        String
+  website     String?
+  apiKey      String?
+  isActive    Boolean  @default(true)
+  isDefault   Boolean  @default(false)
+  orders      Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("couriers")
+}
+
+// ================================================
+// ORDERS
+// ================================================
+
+model Order {
+  id              String         @id @default(uuid())
+  orderNo         String         @unique  // e.g. PRC-2024-00001
+  invoiceNo       String         @unique  // e.g. INV-2024-00001
+  customerId      String
+  customer        Customer       @relation(fields: [customerId], references: [id])
+  addressId       String?
+  address         Address?       @relation(fields: [addressId], references: [id])
+  // Snapshot of address at order time
+  shippingName    String
+  shippingPhone   String
+  shippingAddress String
+  shippingThana   String
+  shippingDistrict String
+  items           OrderItem[]
+  paymentMethod   PaymentMethod  @default(COD)
+  paymentStatus   PaymentStatus  @default(UNPAID)
+  status          OrderStatus    @default(PENDING)
+  subtotal        Decimal        @db.Decimal(12, 2)
+  discountAmount  Decimal        @default(0) @db.Decimal(12, 2)
+  couponCode      String?
+  shippingCharge  Decimal        @default(0) @db.Decimal(10, 2)
+  taxAmount       Decimal        @default(0) @db.Decimal(10, 2)
+  grandTotal      Decimal        @db.Decimal(12, 2)
+  courierId       String?
+  courier         Courier?       @relation(fields: [courierId], references: [id])
+  trackingNumber  String?
+  courierCost     Decimal?       @db.Decimal(10, 2)
+  courierNotes    String?        @db.Text
+  estimatedDelivery DateTime?
+  dispatchedAt    DateTime?
+  deliveredAt     DateTime?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  cancelledBy     String?
+  // ── Customer verification (Phase 2 §2) ─────────────────────────
+  verifiedById    String?
+  verifiedByAdmin User?          @relation("OrderVerifiedBy", fields: [verifiedById], references: [id])
+  verifiedAt      DateTime?
+  verificationNotes String?      @db.Text
+  // ── Secure public tracking (Phase 2 §10/§13) ───────────────────
+  // Opaque, unguessable token used in email links / QR codes instead of
+  // the sequential orderNo. Knowing this token is sufficient to view
+  // read-only tracking info (see track.controller.ts) — it is never
+  // logged anywhere the way orderNo/phone lookups are rate-limited.
+  trackingToken   String         @unique @default(cuid())
+  // ── Inventory guards (Phase 2 §4/§19) ──────────────────────────
+  // Prevent double-reduction (e.g. two concurrent requests both moving
+  // PENDING->CONFIRMED) and double-restoration (e.g. cancelling twice,
+  // or a return processed after a cancel already restored stock).
+  stockReduced    Boolean        @default(false)
+  stockRestored   Boolean        @default(false)
+  notes           String?        @db.Text
+  adminNotes      String?        @db.Text
+  sourceIp        String?
+  history         OrderHistory[]
+  payment         Payment?
+  refund          Refund?
+  return          Return?
+  emailLogs       EmailLog[]
+  // Phase 2.1 Task 2/3
+  orderNotes      OrderNote[]
+  contactLogs     OrderContactLog[]
+  // ── Soft delete (Phase 2 §18) ───────────────────────────────────
+  isDeleted       Boolean        @default(false)
+  deletedAt       DateTime?
+  deletedBy       String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([orderNo])
+  @@index([createdAt])
+  @@index([trackingToken])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  variantId   String?
+  variant     Variant? @relation(fields: [variantId], references: [id])
+  productName String
+  variantInfo String?  // e.g. "Size: L, Color: Red"
+  sku         String?
+  image       String?
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  discount    Decimal  @default(0) @db.Decimal(10, 2)
+  totalPrice  Decimal  @db.Decimal(12, 2)
+  createdAt   DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// Order Timeline (Phase 2 §3). Kept the pre-existing "OrderHistory" model
+// name/table (renaming would be a breaking migration for no functional
+// gain) but it now stores the full timeline shape the spec asks for:
+// previous status, new status, changed by, changed time, reason.
+model OrderHistory {
+  id             String      @id @default(uuid())
+  orderId        String
+  order          Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  previousStatus OrderStatus?
+  status         OrderStatus // new status
+  adminId        String?
+  admin          User?       @relation(fields: [adminId], references: [id])
+  note           String?     @db.Text // "Reason" per spec
+  ip             String?
+  createdAt      DateTime    @default(now()) // "Changed Time"
+
+  @@index([orderId])
+  @@map("order_history")
+}
+
+// ================================================
+// PAYMENTS / REFUNDS / RETURNS
+// ================================================
+
+model Payment {
+  id            String        @id @default(uuid())
+  orderId       String        @unique
+  order         Order         @relation(fields: [orderId], references: [id])
+  method        PaymentMethod
+  status        PaymentStatus @default(UNPAID)
+  amount        Decimal       @db.Decimal(12, 2)
+  paidAmount    Decimal       @default(0) @db.Decimal(12, 2)
+  transactionId String?
+  paidAt        DateTime?
+  note          String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("payments")
+}
+
+model Refund {
+  id            String       @id @default(uuid())
+  orderId       String       @unique
+  order         Order        @relation(fields: [orderId], references: [id])
+  amount        Decimal      @db.Decimal(12, 2)
+  method        PaymentMethod
+  reason        String       @db.Text
+  status        RefundStatus @default(PENDING)
+  processedAt   DateTime?
+  note          String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("refunds")
+}
+
+model Return {
+  id          String       @id @default(uuid())
+  orderId     String       @unique
+  order       Order        @relation(fields: [orderId], references: [id])
+  reason      String       @db.Text  // "Return Reason"
+  condition   String?
+  images      String?      @db.Text  // JSON array of image URLs
+  restockItems Boolean     @default(true)
+  refundStatus RefundStatus @default(PENDING)
+  returnedById String?     // "Returned By" (admin id, plain FK-less string like StockMovement.adminId)
+  returnedAt  DateTime?     // "Returned Time"
+  note        String?      @db.Text // "Return Notes"
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("returns")
+}
+
+// ================================================
+// EXPENSES
+// ================================================
+
+model Expense {
+  id          String          @id @default(uuid())
+  category    ExpenseCategory
+  title       String
+  amount      Decimal         @db.Decimal(12, 2)
+  date        DateTime
+  reference   String?
+  note        String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([date])
+  @@map("expenses")
+}
+
+// ================================================
+// NOTIFICATIONS
+// ================================================
+
+model Notification {
+  id          String           @id @default(uuid())
+  type        NotificationType
+  title       String
+  body        String           @db.Text
+  customerId  String?
+  customer    Customer?        @relation(fields: [customerId], references: [id])
+  data        String?          @db.Text // JSON metadata
+  isRead      Boolean          @default(false)
+  readAt      DateTime?
+  createdAt   DateTime         @default(now())
+
+  @@index([isRead])
+  @@map("notifications")
+}
+
+// ================================================
+// ACTIVITY / AUDIT LOG
+// ================================================
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  adminId     String?
+  admin       User?    @relation(fields: [adminId], references: [id])
+  action      String   // LOGIN, LOGOUT, UPDATE_ORDER, DELETE_PRODUCT, etc.
+  entity      String?  // orders, products, customers, etc.
+  entityId    String?
+  oldValue    String?  @db.Text // JSON
+  newValue    String?  @db.Text // JSON
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([adminId])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// ================================================
+// INTERNAL NOTES & CUSTOMER CONTACT LOG (Phase 2.1 Tasks 2 & 3)
+// ================================================
+
+enum ContactMethod {
+  PHONE
+  FACEBOOK
+  WHATSAPP
+  EMAIL
+}
+
+enum ContactOutcome {
+  ORDER_CONFIRMED
+  NO_ANSWER
+  BUSY
+  CALL_BACK_LATER
+  CANCELLED_BY_CUSTOMER
+  ADDRESS_UPDATED
+  WRONG_NUMBER
+  FAKE_ORDER
+}
+
+// Internal Order Notes. Deliberately a separate table (rather than reusing
+// Order.adminNotes, a single free-text column that gets overwritten on
+// every write) because the brief requires each individual note to carry
+// its own Created By / Created Time / Last Updated, and to support
+// multiple notes per order. Never exposed on the public tracking
+// endpoints (track.controller.ts / findForTracking / findForTrackingByToken
+// use narrow `select`s that don't reference this model at all) —
+// customers must never see these.
+model OrderNote {
+  id            String   @id @default(uuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  note          String   @db.Text
+  createdById   String?
+  createdBy     User?    @relation(fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt // "Last Updated"
+
+  @@index([orderId])
+  @@map("order_notes")
+}
+
+// Customer Contact Log for COD verification. Records are append-only by
+// design (no delete/update endpoint is exposed for this model — "Never
+// delete contact history") so the log stays a trustworthy record of every
+// attempt, not just the latest one.
+model OrderContactLog {
+  id          String         @id @default(uuid())
+  orderId     String
+  order       Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  contactedAt DateTime       @default(now())
+  staffId     String?
+  staff       User?          @relation(fields: [staffId], references: [id])
+  method      ContactMethod
+  outcome     ContactOutcome
+  note        String?        @db.Text
+  createdAt   DateTime       @default(now())
+
+  @@index([orderId])
+  @@index([contactedAt])
+  @@map("order_contact_logs")
+}
+
+// ================================================
+// EMAIL LOG (Phase 2 §15)
+// ================================================
+
+model EmailLog {
+  id            String      @id @default(uuid())
+  orderId       String?
+  order         Order?      @relation(fields: [orderId], references: [id])
+  type          EmailType
+  recipient     String
+  subject       String
+  status        EmailStatus @default(PENDING)
+  failureReason String?     @db.Text
+  sentAt        DateTime?
+  createdAt     DateTime    @default(now())
+
+  @@index([orderId])
+  @@index([status])
+  @@map("email_logs")
+}
+
+// ================================================
+// SETTINGS
+// ================================================
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String   @db.Text
+  group     String   @default("general")
+  updatedAt DateTime @updatedAt
+
+  @@index([group])
+  @@map("settings")
+}
+
+// ================================================
+// COUPONS
+// ================================================
+
+model Coupon {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  type            String   // PERCENTAGE, FLAT
+  value           Decimal  @db.Decimal(10, 2)
+  minOrderAmount  Decimal? @db.Decimal(10, 2)
+  maxDiscount     Decimal? @db.Decimal(10, 2)
+  usageLimit      Int?
+  usedCount       Int      @default(0)
+  isActive        Boolean  @default(true)
+  expiresAt       DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("coupons")
+}
