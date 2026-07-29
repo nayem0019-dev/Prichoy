@@ -1,0 +1,12 @@
+# Prichoy ERP Backend — cPanel Passenger .htaccess
+# Placed at backend/ root — routes all requests through Passenger to Node.js
+
+PassengerEnabled on
+PassengerAppRoot /home/USERNAME/prichoy-project/backend
+PassengerAppType node
+PassengerStartupFile passenger_app.js
+PassengerNodejs /home/USERNAME/nodevenv/prichoy-project/backend/20/bin/node
+
+# Replace USERNAME with your cPanel username
+# Replace the Node version path with what cPanel generates for you
+# (found in cPanel -> Setup Node.js App -> your app -> "Enter to the virtual environment")
