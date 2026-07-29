@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Trust Center — Prichoy Clothing</title>
+  <meta name="description" content="Our policies, security information, and customer commitments. Shop with confidence at Prichoy Clothing Bangladesh.">
+  <meta property="og:title" content="Trust Center — Prichoy Clothing">
+  <meta property="og:description" content="Prichoy's return policy, exchange policy, privacy policy and more.">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .trust-hero { text-align:center; padding:80px 24px 48px; background:linear-gradient(135deg,#f0f7f0,#fff); }
+    .trust-hero h1 { font-family:var(--ff-serif); font-size:2.6rem; margin-bottom:12px; }
+    .trust-hero p { font-size:1rem; color:var(--ink-soft); max-width:520px; margin:0 auto; }
+    .trust-badges { display:flex; justify-content:center; gap:32px; flex-wrap:wrap; padding:32px 24px; border-bottom:1.5px solid var(--ink-line); }
+    .trust-badge { display:flex; flex-direction:column; align-items:center; gap:8px; font-size:.78rem; font-weight:700; letter-spacing:.5px; color:var(--ink-soft); }
+    .trust-badge-icon { width:56px; height:56px; border-radius:50%; background:var(--green-light,#d1fae5); display:flex; align-items:center; justify-content:center; font-size:1.6rem; }
+    .trust-nav { position:sticky; top:70px; background:rgba(255,255,255,.9); backdrop-filter:blur(12px); border-bottom:1.5px solid var(--ink-line); z-index:50; }
+    .trust-nav-inner { display:flex; gap:4px; overflow-x:auto; padding:12px 24px; max-width:900px; margin:0 auto; scrollbar-width:none; }
+    .trust-nav-inner::-webkit-scrollbar { display:none; }
+    .trust-nav-inner a { white-space:nowrap; font-size:.72rem; letter-spacing:1px; text-transform:uppercase; font-weight:700; padding:7px 16px; border-radius:var(--r-full); text-decoration:none; color:var(--ink-soft); border:1.5px solid transparent; transition:all .2s; }
+    .trust-nav-inner a:hover,.trust-nav-inner a.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+    .trust-content { max-width:800px; margin:0 auto; padding:40px 24px 80px; }
+    .trust-section { margin-bottom:60px; }
+    .trust-section h2 { font-family:var(--ff-serif); font-size:1.8rem; margin-bottom:20px; padding-bottom:12px; border-bottom:1.5px solid var(--ink-line); }
+    .trust-section h3 { font-size:.9rem; font-weight:800; letter-spacing:.5px; text-transform:uppercase; margin:24px 0 10px; color:var(--ink); }
+    .trust-section p,.trust-section li { font-size:.9rem; line-height:1.8; color:var(--ink-soft); }
+    .trust-section ul { padding-left:20px; }
+    .trust-section li { margin-bottom:6px; }
+    .policy-box { background:rgba(255,255,255,.6); border:1.5px solid var(--ink-line); border-radius:14px; padding:24px; margin:16px 0; }
+    .policy-box h4 { font-weight:800; font-size:.85rem; margin:0 0 8px; }
+    .policy-box p { font-size:.85rem; margin:0; color:var(--ink-soft); }
+    .highlight-box { background:linear-gradient(135deg,#d1fae5,#ecfdf5); border:1.5px solid #6ee7b7; border-radius:14px; padding:20px 24px; margin:20px 0; }
+    .highlight-box p { font-size:.9rem; margin:0; }
+    .payment-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:12px; margin:16px 0; }
+    .payment-method { border:1.5px solid var(--ink-line); border-radius:10px; padding:16px; text-align:center; font-size:.75rem; font-weight:700; background:rgba(255,255,255,.6); }
+    .contact-methods { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin:16px 0; }
+    .contact-card { border:1.5px solid var(--ink-line); border-radius:14px; padding:20px; background:rgba(255,255,255,.6); }
+    .contact-card .icon { font-size:1.5rem; margin-bottom:8px; }
+    .contact-card h4 { font-size:.8rem; font-weight:800; margin:0 0 4px; }
+    .contact-card p { font-size:.82rem; color:var(--ink-soft); margin:0; }
+    .faq-item { border-bottom:1.5px solid var(--ink-line); }
+    .faq-item summary { padding:16px 4px; cursor:pointer; font-size:.88rem; font-weight:700; list-style:none; display:flex; justify-content:space-between; }
+    .faq-item summary::-webkit-details-marker { display:none; }
+    .faq-item summary::after { content:'＋'; }
+    .faq-item[open] summary::after { content:'−'; }
+    .faq-item p { padding:0 4px 16px; font-size:.85rem; color:var(--ink-soft); line-height:1.7; margin:0; }
+    @media(max-width:600px){.trust-hero h1{font-size:1.8rem;}.trust-badge{font-size:.7rem;}}
+  </style>
+</head>
+<body>
+<div id="navMount"></div><div id="cartMount"></div><div id="authMount"></div>
+
+<div class="trust-hero">
+  <h1>Trust Center</h1>
+  <p>Your confidence is our priority. Everything you need to know about shopping safely with Prichoy.</p>
+</div>
+
+<div class="trust-badges">
+  <div class="trust-badge"><div class="trust-badge-icon">🔒</div>SECURE CHECKOUT</div>
+  <div class="trust-badge"><div class="trust-badge-icon">🔄</div>EASY EXCHANGE</div>
+  <div class="trust-badge"><div class="trust-badge-icon">🚚</div>TRACKED DELIVERY</div>
+  <div class="trust-badge"><div class="trust-badge-icon">💵</div>CASH ON DELIVERY</div>
+  <div class="trust-badge"><div class="trust-badge-icon">🇧🇩</div>MADE FOR BANGLADESH</div>
+</div>
+
+<nav class="trust-nav" aria-label="Trust Center sections">
+  <div class="trust-nav-inner">
+    <a href="#returns">Return Policy</a>
+    <a href="#exchange">Exchange Policy</a>
+    <a href="#delivery">Delivery</a>
+    <a href="#payment">Payment</a>
+    <a href="#privacy">Privacy</a>
+    <a href="#security">Security</a>
+    <a href="#about">About Us</a>
+    <a href="#support">Support</a>
+    <a href="#faq">FAQ</a>
+  </div>
+</nav>
+
+<div class="trust-content">
+
+  <section class="trust-section" id="returns">
+    <h2>Return Policy</h2>
+    <div class="highlight-box">
+      <p>🎯 <strong>Simple rule:</strong> If something's wrong with your order, we'll make it right. We process return requests within 48 hours of receiving the item back.</p>
+    </div>
+    <h3>What can be returned?</h3>
+    <ul>
+      <li>Items with manufacturing defects or damage</li>
+      <li>Wrong item sent (different from what was ordered)</li>
+      <li>Items that don't match the product description</li>
+    </ul>
+    <h3>Return conditions</h3>
+    <ul>
+      <li>Request within 7 days of delivery</li>
+      <li>Items must be unworn, unwashed, with tags attached</li>
+      <li>Original packaging preferred but not required</li>
+      <li>Contact us via Facebook Messenger or WhatsApp before sending</li>
+    </ul>
+    <h3>What happens after return?</h3>
+    <p>Once we receive and inspect the item, we will offer an exchange for available stock or a refund via bKash/Nagad. Processing time is 2-3 business days after receipt.</p>
+    <div class="policy-box">
+      <h4>⚠️ Non-returnable items</h4>
+      <p>Sale / discounted items, items marked as final sale, and items without original packaging in used condition are not eligible for return.</p>
+    </div>
+  </section>
+
+  <section class="trust-section" id="exchange">
+    <h2>Exchange Policy</h2>
+    <div class="highlight-box">
+      <p>👕 <strong>Wrong size?</strong> Exchange it! We make size exchanges easy because getting the right fit matters.</p>
+    </div>
+    <h3>Exchange process</h3>
+    <ul>
+      <li>Contact us within 7 days of delivery via Facebook Messenger or WhatsApp</li>
+      <li>Specify the size/colour you need</li>
+      <li>We confirm availability and arrange courier pickup</li>
+      <li>Replacement ships within 24 hours of receiving the original</li>
+    </ul>
+    <h3>Exchange courier charges</h3>
+    <div class="policy-box">
+      <h4>First exchange — on us!</h4>
+      <p>We cover the courier cost for your first size exchange on any order. Subsequent exchanges on the same order: ৳80 within Dhaka, ৳120 outside Dhaka.</p>
+    </div>
+    <h3>Exchange availability</h3>
+    <p>Exchanges are subject to stock availability. If the requested size/colour is not available, we will offer a full refund or store credit.</p>
+  </section>
+
+  <section class="trust-section" id="delivery">
+    <h2>Delivery Information</h2>
+    <h3>Delivery zones & times</h3>
+    <div class="payment-grid">
+      <div class="payment-method">📍 Dhaka City<br><span style="font-weight:400;font-size:.7rem">24–48 hours</span></div>
+      <div class="payment-method">🗺 Outside Dhaka<br><span style="font-weight:400;font-size:.7rem">2–4 days</span></div>
+      <div class="payment-method">🏔 Remote areas<br><span style="font-weight:400;font-size:.7rem">4–7 days</span></div>
+    </div>
+    <h3>Delivery charges</h3>
+    <ul>
+      <li>Dhaka City: ৳80 (free over ৳3,000)</li>
+      <li>Outside Dhaka: ৳120</li>
+      <li>Same-day delivery: available in select Dhaka areas — contact us</li>
+    </ul>
+    <h3>Order tracking</h3>
+    <p>Every order gets a tracking number via WhatsApp once dispatched. You can also track in real-time on our <a href="track-order.html">track order page</a> using your order number and phone.</p>
+    <h3>Delivery partners</h3>
+    <p>We work with trusted Bangladeshi courier services including Pathao, Paperfly, RedX and Steadfast to ensure safe and timely delivery.</p>
+  </section>
+
+  <section class="trust-section" id="payment">
+    <h2>Payment Methods</h2>
+    <div class="highlight-box">
+      <p>💵 <strong>We're COD-first.</strong> Pay in cash when your order arrives — no card details needed.</p>
+    </div>
+    <h3>Accepted payment methods</h3>
+    <div class="payment-grid">
+      <div class="payment-method">💵<br>Cash on Delivery</div>
+      <div class="payment-method">📱<br>bKash</div>
+      <div class="payment-method">📱<br>Nagad</div>
+      <div class="payment-method">📱<br>Rocket</div>
+    </div>
+    <h3>Advance payment</h3>
+    <p>For orders outside major city areas, we may request 50% advance via bKash. This will be communicated before confirming your order.</p>
+    <h3>Refund method</h3>
+    <p>Refunds are processed via bKash or Nagad within 3 business days of return approval. Refund to original payment method is not possible for COD orders — refund will be sent to a bKash/Nagad number you provide.</p>
+  </section>
+
+  <section class="trust-section" id="privacy">
+    <h2>Privacy Policy</h2>
+    <h3>What data we collect</h3>
+    <ul>
+      <li>Name, phone number, and delivery address (required for orders)</li>
+      <li>Email address (optional — for order confirmations)</li>
+      <li>Order history and preferences</li>
+      <li>IP address and device info for fraud prevention</li>
+    </ul>
+    <h3>How we use your data</h3>
+    <ul>
+      <li>Processing and delivering your orders</li>
+      <li>Sending order status updates via WhatsApp/SMS</li>
+      <li>Improving our products and services</li>
+      <li>Fraud detection and prevention</li>
+    </ul>
+    <h3>Data sharing</h3>
+    <p>We share your delivery address with our courier partners only. We never sell your personal data to third parties. Your phone number may be used by the courier to coordinate delivery.</p>
+    <h3>Your rights</h3>
+    <p>You may request deletion of your account and personal data by contacting us. Orders placed will be retained for 3 years for legal and tax compliance.</p>
+    <h3>Cookies</h3>
+    <p>We use minimal localStorage (not tracking cookies) to save your cart and preferences locally. No third-party tracking cookies are used.</p>
+  </section>
+
+  <section class="trust-section" id="security">
+    <h2>Security</h2>
+    <div class="highlight-box">
+      <p>🔒 <strong>Your security is our responsibility.</strong> We never ask for your bank PIN, OTP, or card number — if anyone claiming to be Prichoy asks for these, it's a scam.</p>
+    </div>
+    <h3>How we protect you</h3>
+    <ul>
+      <li>All passwords hashed with bcrypt (never stored in plain text)</li>
+      <li>HTTPS encryption for all data in transit</li>
+      <li>Rate limiting on order placement to prevent abuse</li>
+      <li>Order prices are always verified server-side — tampered requests are corrected</li>
+      <li>Blacklist system to protect against fraudulent orders</li>
+    </ul>
+    <h3>Safe shopping tips</h3>
+    <ul>
+      <li>Only shop at prichoy.com or our verified Facebook page</li>
+      <li>We never contact you via SMS asking for personal info</li>
+      <li>If you receive a suspicious call claiming to be Prichoy, call us back on our official number</li>
+      <li>Check that the URL starts with https:// before entering any information</li>
+    </ul>
+    <h3>Report a security issue</h3>
+    <p>Found a vulnerability? Please contact us privately at our support channels below. We appreciate responsible disclosure.</p>
+  </section>
+
+  <section class="trust-section" id="about">
+    <h2>About Prichoy</h2>
+    <p>Prichoy (প্রিচয়) is a Bangladeshi clothing brand committed to premium quality fashion for men. We design and source clothing that fits the Bangladeshi lifestyle — comfortable, stylish, and priced fairly.</p>
+    <h3>Business information</h3>
+    <div class="policy-box">
+      <h4>Prichoy Clothing</h4>
+      <p>Dhaka, Bangladesh<br>
+      Facebook: <a href="https://www.facebook.com/PRICHOY/" target="_blank" rel="noopener">facebook.com/PRICHOY</a><br>
+      Support: 01762647661</p>
+    </div>
+    <h3>Our commitment</h3>
+    <ul>
+      <li>Authentic products — no imitations or replicas</li>
+      <li>Honest product descriptions and real product photography</li>
+      <li>No fake reviews — all reviews on our site are from real customers</li>
+      <li>Transparent pricing — no hidden charges</li>
+    </ul>
+  </section>
+
+  <section class="trust-section" id="support">
+    <h2>Customer Support</h2>
+    <div class="contact-methods">
+      <div class="contact-card">
+        <div class="icon">💬</div>
+        <h4>Facebook Messenger</h4>
+        <p>Fastest response — typically within 2 hours during business hours</p>
+        <a href="https://m.me/PRICHOY" target="_blank" rel="noopener" class="btn btn-black btn-sm" style="margin-top:10px;display:inline-block">Message Us</a>
+      </div>
+      <div class="contact-card">
+        <div class="icon">📞</div>
+        <h4>WhatsApp / Phone</h4>
+        <p>01762647661<br>Available 10am – 8pm daily</p>
+      </div>
+      <div class="contact-card">
+        <div class="icon">📧</div>
+        <h4>Email</h4>
+        <p>For non-urgent matters — reply within 24 hours</p>
+      </div>
+    </div>
+    <h3>Support hours</h3>
+    <p>Saturday – Thursday: 10:00 AM – 8:00 PM<br>Friday: 2:00 PM – 8:00 PM<br>Public holidays: limited support</p>
+  </section>
+
+  <section class="trust-section" id="faq">
+    <h2>Frequently Asked Questions</h2>
+    <div>
+      <details class="faq-item">
+        <summary>How do I track my order?</summary>
+        <p>Go to our <a href="track-order.html">Track Order page</a> and enter your order number and phone number. You'll see the full timeline from placement to delivery. You can also check via WhatsApp message on 01762647661.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I change my order after placing it?</summary>
+        <p>Yes, if the order hasn't been dispatched yet. Contact us immediately via Facebook Messenger or WhatsApp. Once dispatched, the order cannot be modified.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Do you deliver outside Bangladesh?</summary>
+        <p>Currently we deliver within Bangladesh only. International shipping is on our roadmap.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How accurate are the product photos?</summary>
+        <p>We photograph all products with natural lighting to represent colours accurately. Slight variations may occur due to screen calibration. If the delivered item significantly differs from the photos, we'll exchange it free of charge.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What if I'm not home for delivery?</summary>
+        <p>The courier will attempt delivery and contact you. You can reschedule by calling the courier or contacting us. Undelivered packages are returned to us after 3 attempts.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I order in bulk or wholesale?</summary>
+        <p>Yes! Contact us via Facebook Messenger or WhatsApp for wholesale pricing and minimum order quantities.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How do I know my review will be genuine?</summary>
+        <p>Only customers with a confirmed delivered order can submit reviews, and all reviews go through moderation before appearing. We never incentivise or edit positive reviews.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Is my payment information safe?</summary>
+        <p>Since most orders are Cash on Delivery, you never enter payment details on our site. For bKash payments, you initiate the transfer directly in the bKash app — we never handle your bKash PIN.</p>
+      </details>
+    </div>
+  </section>
+
+</div>
+
+<div id="footerMount"></div>
+<div id="toastWrap" class="toast-wrap"></div>
+<script src="../js/components.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  document.getElementById("navMount").innerHTML    = renderNav("trust", true);
+  document.getElementById("cartMount").innerHTML   = renderCart();
+  document.getElementById("authMount").innerHTML   = renderAuthModal();
+  document.getElementById("footerMount").innerHTML = renderFooter(true);
+
+  // Highlight active nav section on scroll
+  var sections = document.querySelectorAll('.trust-section');
+  var navLinks = document.querySelectorAll('.trust-nav-inner a');
+  window.addEventListener('scroll', function() {
+    var scrollY = window.scrollY + 120;
+    sections.forEach(function(sec) {
+      if (sec.offsetTop <= scrollY) {
+        navLinks.forEach(function(a) { a.classList.remove('active'); });
+        var active = document.querySelector('.trust-nav-inner a[href="#'+sec.id+'"]');
+        if (active) active.classList.add('active');
+      }
+    });
+  }, {passive:true});
+
+  document.addEventListener("DOMContentLoaded", async function() {
+    await loadProductsCache();
+    loadState(); refreshCartUI(); refreshWishUI(); refreshAuthUI(); initNav();
+  });
+</script>
+</body>
+</html>

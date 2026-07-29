@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>My Account — Prichoy Clothing</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .account-wrap { max-width:980px; margin:0 auto; padding:40px 20px 80px; display:grid; grid-template-columns:220px 1fr; gap:32px; }
+    .account-sidebar { position:sticky; top:90px; align-self:start; }
+    .account-avatar { width:72px; height:72px; border-radius:50%; background:var(--men); display:flex; align-items:center; justify-content:center; font-size:1.8rem; color:#fff; font-family:var(--ff-serif); margin:0 auto 12px; }
+    .account-name { text-align:center; font-family:var(--ff-serif); font-size:1.2rem; }
+    .account-phone { text-align:center; font-size:.78rem; color:var(--ink-muted); margin-bottom:20px; }
+    .account-nav { display:flex; flex-direction:column; gap:4px; }
+    .account-nav-btn { display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:10px; font-size:.82rem; font-weight:700; letter-spacing:.3px; background:none; border:none; cursor:pointer; width:100%; color:var(--ink-soft); transition:all .2s; text-align:left; }
+    .account-nav-btn:hover { background:rgba(0,0,0,.04); color:var(--ink); }
+    .account-nav-btn.active { background:var(--ink); color:#fff; }
+    .account-panel { display:none; }
+    .account-panel.active { display:block; }
+    .panel-title { font-family:var(--ff-serif); font-size:1.5rem; margin-bottom:24px; }
+    .order-card { border:1.5px solid var(--ink-line); border-radius:14px; padding:20px; margin-bottom:14px; background:rgba(255,255,255,.6); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .order-no { font-weight:800; font-size:.9rem; }
+    .order-date { font-size:.75rem; color:var(--ink-muted); }
+    .order-total { font-size:1rem; font-weight:700; }
+    .order-status { font-size:.7rem; font-weight:700; letter-spacing:.8px; text-transform:uppercase; padding:5px 12px; border-radius:var(--r-full); }
+    .status-DELIVERED { background:#d1fae5; color:#059669; }
+    .status-PENDING,.status-CONFIRMED { background:#fef3c7; color:#b45309; }
+    .status-DISPATCHED,.status-PACKED { background:#dbeafe; color:#2563eb; }
+    .status-RETURNED,.status-CANCELLED { background:#fee2e2; color:#dc2626; }
+    .wish-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:16px; }
+    .wish-card { border:1.5px solid var(--ink-line); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.6); cursor:pointer; }
+    .wish-card img { width:100%; aspect-ratio:3/4; object-fit:cover; }
+    .wish-card-info { padding:10px; }
+    .wish-card-name { font-size:.8rem; font-weight:700; }
+    .wish-card-price { font-size:.82rem; color:var(--ink-soft); }
+    .wish-card-remove { font-size:.7rem; color:var(--err); background:none; border:none; cursor:pointer; margin-top:6px; }
+    .profile-form .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .profile-form label { font-size:.75rem; font-weight:700; letter-spacing:.5px; text-transform:uppercase; display:block; margin-bottom:6px; }
+    .profile-form input { display:block; width:100%; padding:10px 14px; border:1.5px solid var(--ink-line); border-radius:8px; font-size:.88rem; font-family:inherit; margin-bottom:16px; }
+    .pref-row { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1.5px solid var(--ink-line); }
+    .pref-label { font-size:.85rem; }
+    .pref-sub { font-size:.72rem; color:var(--ink-muted); }
+    .toggle { position:relative; width:44px; height:24px; }
+    .toggle input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; inset:0; background:#ddd; border-radius:12px; cursor:pointer; transition:.3s; }
+    .toggle input:checked + .toggle-slider { background:var(--men); }
+    .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; background:#fff; border-radius:50%; bottom:3px; left:3px; transition:.3s; }
+    .toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
+    .empty-state { text-align:center; padding:60px 24px; font-family:var(--ff-serif); font-style:italic; color:var(--ink-muted); font-size:1.1rem; }
+    .auth-gate { text-align:center; padding:80px 24px; }
+    .auth-gate h2 { font-family:var(--ff-serif); font-size:1.8rem; margin-bottom:12px; }
+    .auth-gate p { font-size:.9rem; color:var(--ink-soft); margin-bottom:24px; }
+    @media(max-width:680px){.account-wrap{grid-template-columns:1fr;}.account-sidebar{position:static;}.account-nav{flex-direction:row;flex-wrap:wrap;}.account-nav-btn{flex:1;min-width:100px;text-align:center;justify-content:center;}.profile-form .form-row{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div id="navMount"></div><div id="cartMount"></div><div id="authMount"></div>
+
+<div id="authGate" class="auth-gate" style="display:none">
+  <h2>Sign in to your account</h2>
+  <p>View your orders, manage your wishlist, and update your profile.</p>
+  <button class="btn btn-black" onclick="openAuth('login')">Sign In</button>
+  &nbsp;
+  <button class="btn btn-outline" onclick="openAuth('register')">Create Account</button>
+</div>
+
+<div id="accountMain" class="account-wrap" style="display:none">
+  <aside class="account-sidebar">
+    <div class="account-avatar" id="avatarInitial">?</div>
+    <div class="account-name" id="accountName">Loading…</div>
+    <div class="account-phone" id="accountPhone"></div>
+    <nav class="account-nav" aria-label="Account sections">
+      <button class="account-nav-btn active" data-panel="orders" onclick="switchPanel('orders',this)">📦 My Orders</button>
+      <button class="account-nav-btn" data-panel="wishlist" onclick="switchPanel('wishlist',this)">♥ Wishlist</button>
+      <button class="account-nav-btn" data-panel="profile" onclick="switchPanel('profile',this)">👤 Profile</button>
+      <button class="account-nav-btn" data-panel="security" onclick="switchPanel('security',this)">🔒 Security</button>
+      <button class="account-nav-btn" data-panel="notifications" onclick="switchPanel('notifications',this)">🔔 Notifications</button>
+      <button class="account-nav-btn" onclick="doAccountLogout()" style="color:var(--err);margin-top:16px">↩ Sign Out</button>
+    </nav>
+  </aside>
+
+  <main>
+    <!-- Orders -->
+    <div class="account-panel active" id="panel-orders">
+      <h2 class="panel-title">My Orders</h2>
+      <div id="ordersContent"><div class="empty-state">Loading orders…</div></div>
+      <div id="ordersPagination"></div>
+    </div>
+
+    <!-- Wishlist -->
+    <div class="account-panel" id="panel-wishlist">
+      <h2 class="panel-title">My Wishlist</h2>
+      <div id="wishlistContent"><div class="empty-state">Loading wishlist…</div></div>
+    </div>
+
+    <!-- Profile -->
+    <div class="account-panel" id="panel-profile">
+      <h2 class="panel-title">My Profile</h2>
+      <form class="profile-form" onsubmit="saveProfile(event)">
+        <div class="form-row">
+          <div>
+            <label>Full Name</label>
+            <input id="pName" placeholder="Full name" required>
+          </div>
+          <div>
+            <label>Phone (cannot change)</label>
+            <input id="pPhone" disabled style="opacity:.6;background:#f5f5f5">
+          </div>
+        </div>
+        <label>Email Address</label>
+        <input id="pEmail" type="email" placeholder="your@email.com">
+        <button class="btn btn-black" type="submit">Save Changes</button>
+      </form>
+    </div>
+
+    <!-- Security -->
+    <div class="account-panel" id="panel-security">
+      <h2 class="panel-title">Security</h2>
+      <form class="profile-form" onsubmit="savePassword(event)">
+        <label>Current Password</label>
+        <input id="pOldPass" type="password" required placeholder="Current password">
+        <label>New Password</label>
+        <input id="pNewPass" type="password" required placeholder="At least 6 characters" minlength="6">
+        <label>Confirm New Password</label>
+        <input id="pConfPass" type="password" required placeholder="Repeat new password">
+        <button class="btn btn-black" type="submit">Change Password</button>
+      </form>
+    </div>
+
+    <!-- Notifications -->
+    <div class="account-panel" id="panel-notifications">
+      <h2 class="panel-title">Notification Preferences</h2>
+      <p style="font-size:.85rem;color:var(--ink-soft);margin-bottom:24px">Choose how you'd like to be notified about your orders and promotions.</p>
+      <div id="notifPrefs">
+        <div class="pref-row">
+          <div><div class="pref-label">Order Updates — Email</div><div class="pref-sub">Confirmation, dispatch, delivery notifications</div></div>
+          <label class="toggle"><input type="checkbox" id="pref-orderUpdatesEmail" onchange="savePrefs()"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="pref-row">
+          <div><div class="pref-label">Order Updates — WhatsApp</div><div class="pref-sub">Dispatch and tracking via WhatsApp</div></div>
+          <label class="toggle"><input type="checkbox" id="pref-orderUpdatesWhatsapp" onchange="savePrefs()"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="pref-row">
+          <div><div class="pref-label">Promotions & Offers — Email</div><div class="pref-sub">Sales, new arrivals, exclusive deals</div></div>
+          <label class="toggle"><input type="checkbox" id="pref-promotionsEmail" onchange="savePrefs()"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="pref-row">
+          <div><div class="pref-label">Review Requests — Email</div><div class="pref-sub">Reminder to review products after delivery</div></div>
+          <label class="toggle"><input type="checkbox" id="pref-reviewRequestEmail" onchange="savePrefs()"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="footerMount"></div>
+<div id="toastWrap" class="toast-wrap"></div>
+<script src="../js/components.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+<script>
+  document.getElementById("navMount").innerHTML    = renderNav("account", true);
+  document.getElementById("cartMount").innerHTML   = renderCart();
+  document.getElementById("authMount").innerHTML   = renderAuthModal();
+  document.getElementById("footerMount").innerHTML = renderFooter(true);
+
+  function switchPanel(name, btn) {
+    document.querySelectorAll('.account-panel').forEach(function(p){p.classList.remove('active');});
+    document.querySelectorAll('.account-nav-btn[data-panel]').forEach(function(b){b.classList.remove('active');});
+    var panel = document.getElementById('panel-'+name);
+    if (panel) panel.classList.add('active');
+    if (btn) btn.classList.add('active');
+    if (name==='orders') loadOrders();
+    if (name==='wishlist') loadWishlist();
+    if (name==='notifications') loadPrefs();
+  }
+
+  function doAccountLogout() {
+    customerApi.logout();
+    // Also clear the legacy demo state
+    doLogout();
+    toast('Signed out','');
+    setTimeout(function(){ window.location.href='../index.html'; }, 800);
+  }
+
+  // ── Orders ────────────────────────────────────────────────────
+  function loadOrders(page) {
+    page = page || 1;
+    customerApi.getMyOrders(page).then(function(res){
+      var data = res.data;
+      var content = document.getElementById('ordersContent');
+      if (!data.orders || !data.orders.length) {
+        content.innerHTML = '<div class="empty-state">No orders yet.<br><a href="shop.html">Start shopping →</a></div>';
+        return;
+      }
+      content.innerHTML = data.orders.map(function(o) {
+        var statusClass = 'status-'+(o.status||'PENDING');
+        return `<div class="order-card">
+          <div>
+            <div class="order-no">${o.orderNo}</div>
+            <div class="order-date">${new Date(o.createdAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+          </div>
+          <div><div class="order-total">৳${Number(o.grandTotal).toLocaleString()}</div><div style="font-size:.72rem;color:var(--ink-muted)">${o._count?.items||0} item(s)</div></div>
+          <span class="order-status ${statusClass}">${o.status}</span>
+          <a href="track-order.html?token=${o.trackingToken}" class="btn btn-outline" style="font-size:.72rem;padding:6px 16px">Track →</a>
+        </div>`;
+      }).join('');
+      var pag = document.getElementById('ordersPagination');
+      if (data.meta && data.meta.totalPages > 1) {
+        pag.innerHTML = `<div style="display:flex;gap:10px;justify-content:center;margin-top:20px">
+          ${page>1?`<button class="btn btn-outline" onclick="loadOrders(${page-1})">← Previous</button>`:''}
+          <span style="line-height:2.2;font-size:.82rem">Page ${page} of ${data.meta.totalPages}</span>
+          ${page<data.meta.totalPages?`<button class="btn btn-outline" onclick="loadOrders(${page+1})">Next →</button>`:''}
+        </div>`;
+      } else { pag.innerHTML = ''; }
+    }).catch(function(e){ document.getElementById('ordersContent').innerHTML='<div class="empty-state">'+e.message+'</div>'; });
+  }
+
+  // ── Wishlist ──────────────────────────────────────────────────
+  function loadWishlist() {
+    customerApi.getWishlist().then(function(res){
+      var items = res.data || [];
+      var content = document.getElementById('wishlistContent');
+      if (!items.length) { content.innerHTML='<div class="empty-state">Your wishlist is empty.<br><a href="shop.html">Explore the shop →</a></div>'; return; }
+      content.innerHTML = '<div class="wish-grid">'+items.map(function(item){
+        var p = item.product;
+        var price = p.salePrice ? Number(p.salePrice) : Number(p.sellingPrice);
+        return `<div class="wish-card" onclick="window.location.href='product.html?slug=${p.slug}'">
+          <img src="${p.image||'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=300&q=70'}" alt="${p.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=300&q=70'">
+          <div class="wish-card-info">
+            <div class="wish-card-name">${p.name}</div>
+            <div class="wish-card-price">৳${price.toLocaleString()}</div>
+            ${!p.inStock?'<span style="font-size:.7rem;color:var(--err)">Out of stock</span>':''}
+            <button class="wish-card-remove" onclick="event.stopPropagation();removeWish('${item.productId}')">✕ Remove</button>
+          </div>
+        </div>`;
+      }).join('')+'</div>';
+    }).catch(function(){ document.getElementById('wishlistContent').innerHTML='<div class="empty-state">Could not load wishlist.</div>'; });
+  }
+
+  function removeWish(productId) {
+    customerApi.removeFromWishlist(productId).then(function(){
+      toast('Removed from wishlist','');
+      loadWishlist();
+    }).catch(function(e){ toast(e.message,'err'); });
+  }
+
+  // ── Profile ───────────────────────────────────────────────────
+  function loadProfile() {
+    customerApi.getProfile().then(function(res){
+      var p = res.data;
+      if (!p) return;
+      document.getElementById('accountName').textContent = p.name;
+      document.getElementById('accountPhone').textContent = p.phone;
+      document.getElementById('avatarInitial').textContent = p.name?.[0]?.toUpperCase()||'?';
+      document.getElementById('pName').value = p.name||'';
+      document.getElementById('pPhone').value = p.phone||'';
+      document.getElementById('pEmail').value = p.email||'';
+    }).catch(function(){});
+  }
+
+  function saveProfile(e) {
+    e.preventDefault();
+    customerApi.updateProfile({
+      name: document.getElementById('pName').value.trim(),
+      email: document.getElementById('pEmail').value.trim()||undefined,
+    }).then(function(){ toast('Profile updated ✓','ok'); loadProfile(); })
+      .catch(function(err){ toast(err.message,'err'); });
+  }
+
+  // ── Security ──────────────────────────────────────────────────
+  function savePassword(e) {
+    e.preventDefault();
+    var np = document.getElementById('pNewPass').value;
+    var cp = document.getElementById('pConfPass').value;
+    if (np !== cp) { toast('Passwords do not match','err'); return; }
+    customerApi.changePassword(document.getElementById('pOldPass').value, np)
+      .then(function(){ toast('Password changed ✓','ok'); e.target.reset(); })
+      .catch(function(err){ toast(err.message,'err'); });
+  }
+
+  // ── Notification prefs ────────────────────────────────────────
+  function loadPrefs() {
+    customerApi.getNotificationPrefs().then(function(res){
+      var prefs = res.data || {};
+      ['orderUpdatesEmail','orderUpdatesWhatsapp','promotionsEmail','reviewRequestEmail'].forEach(function(key){
+        var el = document.getElementById('pref-'+key);
+        if (el) el.checked = !!prefs[key];
+      });
+    }).catch(function(){});
+  }
+
+  function savePrefs() {
+    var data = {};
+    ['orderUpdatesEmail','orderUpdatesWhatsapp','promotionsEmail','reviewRequestEmail'].forEach(function(key){
+      var el = document.getElementById('pref-'+key);
+      if (el) data[key] = el.checked;
+    });
+    customerApi.updateNotificationPrefs(data)
+      .then(function(){ toast('Preferences saved','ok'); })
+      .catch(function(e){ toast(e.message,'err'); });
+  }
+
+  // ── Init ──────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', async function(){
+    await loadProductsCache();
+    loadState(); refreshCartUI(); refreshAuthUI(); initNav();
+
+    if (!customerAuth.isLoggedIn()) {
+      document.getElementById('authGate').style.display = '';
+    } else {
+      document.getElementById('accountMain').style.display = 'grid';
+      loadProfile();
+      loadOrders();
+    }
+  });
+</script>
+</body>
+</html>
